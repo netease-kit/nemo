@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration scan="true" scanPeriod="60 seconds" debug="false">
+    <contextName>logback</contextName>
+    <springProperty scope="context" name="project.name" source="spring.application.name" defaultValue="nemo.rest"/>
+    <property name="log.path" value="${user.home}/nemo-logs" />
+    <property name="project.name" value="nemo" />
+    <property name="pattern.layout" value="%d{yyyy-MM-dd HH:mm:ss.SSS} %-5p [%t] [%c{1} %L] - %X{traceId} %m%n" />
+
+    <logger name="com.netease" level="DEBUG"/>
+
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>debug</level>
+        </filter>
+        <encoder>
+            <pattern>${pattern.layout}</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${logPath:-${log.path}}/${project.name}.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${logPath:-${log.path}}/${project.name}.log.%d{yyyy-MM-dd}</fileNamePattern>            <maxHistory>30</maxHistory>
+            <maxHistory>15</maxHistory>
+            <totalSizeCap>40GB</totalSizeCap>
+        </rollingPolicy>
+        <encoder>
+            <pattern>${pattern.layout}</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="FILE_ERROR" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>ERROR</level>
+            <OnMismatch>DENY</OnMismatch>
+            <OnMatch>ACCEPT</OnMatch>
+        </filter>
+        <file>${log.path}/${project.name}_error.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <FileNamePattern>${log.path}/${project.name}-%d{yyyy-MM-dd}_error.log</FileNamePattern>
+            <MaxHistory>30</MaxHistory>
+        </rollingPolicy>
+
+        <!-- 输出的日志内容格式化-->
+        <layout class="ch.qos.logback.classic.PatternLayout">
+            <Pattern>${pattern.layout}</Pattern>
+        </layout>
+    </appender>
+
+    <springProfile name="local">
+        <root level="info">
+            <appender-ref ref="CONSOLE" />
+        </root>
+    </springProfile>
+
+</configuration>

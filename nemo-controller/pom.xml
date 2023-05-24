@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>nemo</artifactId>
+        <groupId>com.netease</groupId>
+        <version>1.0.0-SNAPSHOT</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>nemo-controller</artifactId>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.netease</groupId>
+            <artifactId>nemo-socialchat-service</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.netease</groupId>
+            <artifactId>nemo-user-service</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.netease</groupId>
+            <artifactId>nemo-common</artifactId>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+            </resource>
+        </resources>
+
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <mainClass>com.netease.nemo.RestApplication</mainClass>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>repackage</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <configuration>
+                    <encoding>UTF-8</encoding>
+                    <nonFilteredFileExtensions>
+                        <nonFilteredFileExtension>ip</nonFilteredFileExtension>
+                    </nonFilteredFileExtensions>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+    <profiles>
+        <profile>
+            <id>prod</id>
+            <properties>
+                <appName>yiyong-nemo</appName>
+                <appClusterName>yiyong-nemo-prod</appClusterName>
+            </properties>
+        </profile>
+        <profile>
+            <id>test</id>
+            <properties>
+                <appName>yiyong-nemo</appName>
+                <appClusterName>yiyong-nemo-test</appClusterName>
+            </properties>
+        </profile>
+        <profile>
+            <id>sg</id>
+            <properties>
+                <appName>yiyong-nemo</appName>
+                <appClusterName>yiyong-nemo-sg</appClusterName>
+            </properties>
+        </profile>
+        <profile>
+            <id>local</id>
+            <properties>
+                <appName>yiyong-nemo</appName>
+                <appClusterName>yiyong-nemo-local</appClusterName>
+            </properties>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+        </profile>
+    </profiles>
+
+</project>

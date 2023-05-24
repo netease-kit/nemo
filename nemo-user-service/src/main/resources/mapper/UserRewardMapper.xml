@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.netease.nemo.mapper.UserRewardMapper">
+  <resultMap id="BaseResultMap" type="com.netease.nemo.model.po.UserReward">
+    <id column="id" jdbcType="BIGINT" property="id" />
+    <result column="user_uuid" jdbcType="VARCHAR" property="userUuid" />
+    <result column="gift_id" jdbcType="BIGINT" property="giftId" />
+    <result column="gift_count" jdbcType="INTEGER" property="giftCount" />
+    <result column="cloud_coin" jdbcType="BIGINT" property="cloudCoin" />
+    <result column="target" jdbcType="VARCHAR" property="target" />
+    <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+    <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    id, user_uuid, gift_id, gift_count, cloud_coin, target, create_time, update_time
+  </sql>
+  <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from user_reward
+    where id = #{id,jdbcType=BIGINT}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+    delete from user_reward
+    where id = #{id,jdbcType=BIGINT}
+  </delete>
+  <insert id="insert" keyColumn="id" keyProperty="id" parameterType="com.netease.nemo.model.po.UserReward" useGeneratedKeys="true">
+    insert into user_reward (user_uuid, gift_id, gift_count, 
+      cloud_coin, target, create_time, 
+      update_time)
+    values (#{userUuid,jdbcType=VARCHAR}, #{giftId,jdbcType=BIGINT}, #{giftCount,jdbcType=INTEGER}, 
+      #{cloudCoin,jdbcType=BIGINT}, #{target,jdbcType=VARCHAR}, #{createTime,jdbcType=TIMESTAMP}, 
+      #{updateTime,jdbcType=TIMESTAMP})
+  </insert>
+  <insert id="insertSelective" keyColumn="id" keyProperty="id" parameterType="com.netease.nemo.model.po.UserReward" useGeneratedKeys="true">
+    insert into user_reward
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="userUuid != null">
+        user_uuid,
+      </if>
+      <if test="giftId != null">
+        gift_id,
+      </if>
+      <if test="giftCount != null">
+        gift_count,
+      </if>
+      <if test="cloudCoin != null">
+        cloud_coin,
+      </if>
+      <if test="target != null">
+        target,
+      </if>
+      <if test="createTime != null">
+        create_time,
+      </if>
+      <if test="updateTime != null">
+        update_time,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="userUuid != null">
+        #{userUuid,jdbcType=VARCHAR},
+      </if>
+      <if test="giftId != null">
+        #{giftId,jdbcType=BIGINT},
+      </if>
+      <if test="giftCount != null">
+        #{giftCount,jdbcType=INTEGER},
+      </if>
+      <if test="cloudCoin != null">
+        #{cloudCoin,jdbcType=BIGINT},
+      </if>
+      <if test="target != null">
+        #{target,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null">
+        #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updateTime != null">
+        #{updateTime,jdbcType=TIMESTAMP},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.netease.nemo.model.po.UserReward">
+    update user_reward
+    <set>
+      <if test="userUuid != null">
+        user_uuid = #{userUuid,jdbcType=VARCHAR},
+      </if>
+      <if test="giftId != null">
+        gift_id = #{giftId,jdbcType=BIGINT},
+      </if>
+      <if test="giftCount != null">
+        gift_count = #{giftCount,jdbcType=INTEGER},
+      </if>
+      <if test="cloudCoin != null">
+        cloud_coin = #{cloudCoin,jdbcType=BIGINT},
+      </if>
+      <if test="target != null">
+        target = #{target,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null">
+        create_time = #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updateTime != null">
+        update_time = #{updateTime,jdbcType=TIMESTAMP},
+      </if>
+    </set>
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.netease.nemo.model.po.UserReward">
+    update user_reward
+    set user_uuid = #{userUuid,jdbcType=VARCHAR},
+      gift_id = #{giftId,jdbcType=BIGINT},
+      gift_count = #{giftCount,jdbcType=INTEGER},
+      cloud_coin = #{cloudCoin,jdbcType=BIGINT},
+      target = #{target,jdbcType=VARCHAR},
+      create_time = #{createTime,jdbcType=TIMESTAMP},
+      update_time = #{updateTime,jdbcType=TIMESTAMP}
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+</mapper>

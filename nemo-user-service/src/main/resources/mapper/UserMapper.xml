@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.netease.nemo.mapper.UserMapper">
+  <resultMap id="BaseResultMap" type="com.netease.nemo.model.po.User">
+    <id column="id" jdbcType="BIGINT" property="id" />
+    <result column="mobile" jdbcType="VARCHAR" property="mobile" />
+    <result column="user_uuid" jdbcType="VARCHAR" property="userUuid" />
+    <result column="user_token" jdbcType="VARCHAR" property="userToken" />
+    <result column="im_token" jdbcType="VARCHAR" property="imToken" />
+    <result column="user_name" jdbcType="VARCHAR" property="userName" />
+    <result column="icon" jdbcType="VARCHAR" property="icon" />
+    <result column="age" jdbcType="INTEGER" property="age" />
+    <result column="sex" jdbcType="TINYINT" property="sex" />
+    <result column="state" jdbcType="TINYINT" property="state" />
+    <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+    <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    id, mobile, user_uuid, user_token, im_token, user_name, icon, age, sex, state, create_time, 
+    update_time
+  </sql>
+  <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from user
+    where id = #{id,jdbcType=BIGINT}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+    delete from user
+    where id = #{id,jdbcType=BIGINT}
+  </delete>
+  <insert id="insert" keyColumn="id" keyProperty="id" parameterType="com.netease.nemo.model.po.User" useGeneratedKeys="true">
+    insert into user (mobile, user_uuid, user_token, 
+      im_token, user_name, icon, 
+      age, sex, state, create_time, 
+      update_time)
+    values (#{mobile,jdbcType=VARCHAR}, #{userUuid,jdbcType=VARCHAR}, #{userToken,jdbcType=VARCHAR}, 
+      #{imToken,jdbcType=VARCHAR}, #{userName,jdbcType=VARCHAR}, #{icon,jdbcType=VARCHAR}, 
+      #{age,jdbcType=INTEGER}, #{sex,jdbcType=TINYINT}, #{state,jdbcType=TINYINT}, #{createTime,jdbcType=TIMESTAMP}, 
+      #{updateTime,jdbcType=TIMESTAMP})
+  </insert>
+  <insert id="insertSelective" keyColumn="id" keyProperty="id" parameterType="com.netease.nemo.model.po.User" useGeneratedKeys="true">
+    insert into user
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="mobile != null">
+        mobile,
+      </if>
+      <if test="userUuid != null">
+        user_uuid,
+      </if>
+      <if test="userToken != null">
+        user_token,
+      </if>
+      <if test="imToken != null">
+        im_token,
+      </if>
+      <if test="userName != null">
+        user_name,
+      </if>
+      <if test="icon != null">
+        icon,
+      </if>
+      <if test="age != null">
+        age,
+      </if>
+      <if test="sex != null">
+        sex,
+      </if>
+      <if test="state != null">
+        state,
+      </if>
+      <if test="createTime != null">
+        create_time,
+      </if>
+      <if test="updateTime != null">
+        update_time,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="mobile != null">
+        #{mobile,jdbcType=VARCHAR},
+      </if>
+      <if test="userUuid != null">
+        #{userUuid,jdbcType=VARCHAR},
+      </if>
+      <if test="userToken != null">
+        #{userToken,jdbcType=VARCHAR},
+      </if>
+      <if test="imToken != null">
+        #{imToken,jdbcType=VARCHAR},
+      </if>
+      <if test="userName != null">
+        #{userName,jdbcType=VARCHAR},
+      </if>
+      <if test="icon != null">
+        #{icon,jdbcType=VARCHAR},
+      </if>
+      <if test="age != null">
+        #{age,jdbcType=INTEGER},
+      </if>
+      <if test="sex != null">
+        #{sex,jdbcType=TINYINT},
+      </if>
+      <if test="state != null">
+        #{state,jdbcType=TINYINT},
+      </if>
+      <if test="createTime != null">
+        #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updateTime != null">
+        #{updateTime,jdbcType=TIMESTAMP},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.netease.nemo.model.po.User">
+    update user
+    <set>
+      <if test="mobile != null">
+        mobile = #{mobile,jdbcType=VARCHAR},
+      </if>
+      <if test="userUuid != null">
+        user_uuid = #{userUuid,jdbcType=VARCHAR},
+      </if>
+      <if test="userToken != null">
+        user_token = #{userToken,jdbcType=VARCHAR},
+      </if>
+      <if test="imToken != null">
+        im_token = #{imToken,jdbcType=VARCHAR},
+      </if>
+      <if test="userName != null">
+        user_name = #{userName,jdbcType=VARCHAR},
+      </if>
+      <if test="icon != null">
+        icon = #{icon,jdbcType=VARCHAR},
+      </if>
+      <if test="age != null">
+        age = #{age,jdbcType=INTEGER},
+      </if>
+      <if test="sex != null">
+        sex = #{sex,jdbcType=TINYINT},
+      </if>
+      <if test="state != null">
+        state = #{state,jdbcType=TINYINT},
+      </if>
+      <if test="createTime != null">
+        create_time = #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updateTime != null">
+        update_time = #{updateTime,jdbcType=TIMESTAMP},
+      </if>
+    </set>
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.netease.nemo.model.po.User">
+    update user
+    set mobile = #{mobile,jdbcType=VARCHAR},
+      user_uuid = #{userUuid,jdbcType=VARCHAR},
+      user_token = #{userToken,jdbcType=VARCHAR},
+      im_token = #{imToken,jdbcType=VARCHAR},
+      user_name = #{userName,jdbcType=VARCHAR},
+      icon = #{icon,jdbcType=VARCHAR},
+      age = #{age,jdbcType=INTEGER},
+      sex = #{sex,jdbcType=TINYINT},
+      state = #{state,jdbcType=TINYINT},
+      create_time = #{createTime,jdbcType=TIMESTAMP},
+      update_time = #{updateTime,jdbcType=TIMESTAMP}
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+
+  <select id="selectByUserUuid" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List" />
+    from user
+    where state = 1 and user_uuid = #{userUuid,jdbcType=VARCHAR}
+  </select>
+
+  <select id="getUserByMobile" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List" />
+    from user
+    where state = 1 and mobile = #{mobile,jdbcType=VARCHAR}
+  </select>
+</mapper>
