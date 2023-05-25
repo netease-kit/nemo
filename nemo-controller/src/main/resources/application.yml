@@ -1,0 +1,26 @@
+spring:
+  profiles:
+    active: local
+  aop:
+    auto: true
+    proxy-target-class: true
+  jackson:
+    default-property-inclusion: 'non_null'
+  http:
+    converters:
+      preferred-json-mapper: gson
+  application:
+    name: nemo.rest
+  mvc:
+    throw-exception-if-no-handler-found: true
+  servlet:
+    multipart:
+      enabled: false
+  messages:
+    basename: resMessages/messages
+    encoding: UTF-8
+
+mybatis:
+  configuration:
+    map-ß-to-camel-case: true
+  mapper-locations: classpath:mapper/**/*.xml
