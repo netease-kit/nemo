@@ -11,7 +11,6 @@ import com.netease.nemo.openApi.dto.response.NeRoomResponse;
 import com.netease.nemo.openApi.paramters.neroom.CreateNeRoomParam;
 import com.netease.nemo.openApi.paramters.neroom.CreateNeRoomUserParam;
 import com.netease.nemo.openApi.paramters.neroom.NeRoomMessageParam;
-import com.netease.nemo.openApi.paramters.neroom.v1.PutRoomParam;
 import com.netease.nemo.util.ObjectMapperUtil;
 import com.netease.nemo.util.gson.GsonUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -100,36 +99,6 @@ public class NeRoomService {
         }
     }
 
-    /**
-     * 创建NeRoom房间
-     * https://doc.yunxin.163.com/neroom/docs/TM0MTUyNjc?platform=server
-     */
-    public CreateNeRoomDto createNeRoomV2(String roomUuid, PutRoomParam putRoomParam) {
-        log.info("start createNeRoomV2. roomUuid:{},  param:{}", roomUuid, GsonUtil.toJson(putRoomParam));
-        if (putRoomParam == null || StringUtils.isEmpty(roomUuid)) {
-            throw new BsException(ErrorCode.INTERNAL_SERVER_ERROR);
-        }
-
-        String url = String.format("/apps/%s/v1/rooms/%s", yunXinConfigProperties.getAppKey(), roomUuid);
-
-        try {
-            NeRoomResponse neRoomResponse = yunXinServer.requestEntityForNeRoom(url, HttpMethod.PUT, putRoomParam);
-            if (neRoomResponse.getData() == null) {
-                throw new BsException(ErrorCode.INTERNAL_SERVER_ERROR);
-            }
-            Integer code = neRoomResponse.getCode();
-            if (code == null || code != 0) {
-                throw new BsException(ErrorCode.INTERNAL_SERVER_ERROR, neRoomResponse.getMsg());
-            }
-            return modelMapper.map(neRoomResponse.getData(), CreateNeRoomDto.class);
-        } catch (BsException e) {
-            throw e;
-        } catch (Exception e) {
-            log.info("createNeRoom error.", e);
-            throw new BsException(ErrorCode.INTERNAL_SERVER_ERROR);
-        }
-    }
-
 
     /**
      * 删除NeRoom房间
@@ -146,7 +115,7 @@ public class NeRoomService {
         try {
             NeRoomResponse neRoomResponse = yunXinServer.requestEntityForNeRoom(url, HttpMethod.DELETE, null);
             Integer code = neRoomResponse.getCode();
-            if (code == null) {
+            if (code == null || code != 0) {
                 throw new BsException(ErrorCode.INTERNAL_SERVER_ERROR, neRoomResponse.getMsg());
             }
         } catch (BsException e) {
