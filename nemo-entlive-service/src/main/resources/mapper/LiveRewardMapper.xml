@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.netease.nemo.entlive.mapper.LiveRewardMapper">
+  <resultMap id="BaseResultMap" type="com.netease.nemo.entlive.model.po.LiveReward">
+    <id column="id" jdbcType="BIGINT" property="id" />
+    <result column="live_record_id" jdbcType="BIGINT" property="liveRecordId" />
+    <result column="room_archive_id" jdbcType="VARCHAR" property="roomArchiveId" />
+    <result column="room_uuid" jdbcType="VARCHAR" property="roomUuid" />
+    <result column="user_uuid" jdbcType="VARCHAR" property="userUuid" />
+    <result column="gift_id" jdbcType="BIGINT" property="giftId" />
+    <result column="cloud_coin" jdbcType="BIGINT" property="cloudCoin" />
+    <result column="gift_count" jdbcType="INTEGER" property="giftCount" />
+    <result column="target" jdbcType="VARCHAR" property="target" />
+    <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+    <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
+  </resultMap>
+
+  <resultMap id="LiveRewardTotalDtoMap" type="com.netease.nemo.entlive.dto.LiveRewardTotalDto">
+    <result column="reward_total" jdbcType="BIGINT" property="rewardTotal" />
+    <result column="live_record_id" jdbcType="BIGINT" property="liveRecordId" />
+  </resultMap>
+
+
+  <sql id="Base_Column_List">
+    id, live_record_id, room_archive_id, room_uuid, user_uuid, gift_id, cloud_coin, gift_count, 
+    target, create_time, update_time
+  </sql>
+  <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from live_reward
+    where id = #{id,jdbcType=BIGINT}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+    delete from live_reward
+    where id = #{id,jdbcType=BIGINT}
+  </delete>
+  <insert id="insert" keyColumn="id" keyProperty="id" parameterType="com.netease.nemo.entlive.model.po.LiveReward" useGeneratedKeys="true">
+    insert into live_reward (live_record_id, room_archive_id, room_uuid, 
+      user_uuid, gift_id, cloud_coin, 
+      gift_count, target, create_time, 
+      update_time)
+    values (#{liveRecordId,jdbcType=BIGINT}, #{roomArchiveId,jdbcType=VARCHAR}, #{roomUuid,jdbcType=VARCHAR}, 
+      #{userUuid,jdbcType=VARCHAR}, #{giftId,jdbcType=BIGINT}, #{cloudCoin,jdbcType=BIGINT}, 
+      #{giftCount,jdbcType=INTEGER}, #{target,jdbcType=VARCHAR}, #{createTime,jdbcType=TIMESTAMP}, 
+      #{updateTime,jdbcType=TIMESTAMP})
+  </insert>
+  <insert id="insertSelective" keyColumn="id" keyProperty="id" parameterType="com.netease.nemo.entlive.model.po.LiveReward" useGeneratedKeys="true">
+    insert into live_reward
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="liveRecordId != null">
+        live_record_id,
+      </if>
+      <if test="roomArchiveId != null">
+        room_archive_id,
+      </if>
+      <if test="roomUuid != null">
+        room_uuid,
+      </if>
+      <if test="userUuid != null">
+        user_uuid,
+      </if>
+      <if test="giftId != null">
+        gift_id,
+      </if>
+      <if test="cloudCoin != null">
+        cloud_coin,
+      </if>
+      <if test="giftCount != null">
+        gift_count,
+      </if>
+      <if test="target != null">
+        target,
+      </if>
+      <if test="createTime != null">
+        create_time,
+      </if>
+      <if test="updateTime != null">
+        update_time,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="liveRecordId != null">
+        #{liveRecordId,jdbcType=BIGINT},
+      </if>
+      <if test="roomArchiveId != null">
+        #{roomArchiveId,jdbcType=VARCHAR},
+      </if>
+      <if test="roomUuid != null">
+        #{roomUuid,jdbcType=VARCHAR},
+      </if>
+      <if test="userUuid != null">
+        #{userUuid,jdbcType=VARCHAR},
+      </if>
+      <if test="giftId != null">
+        #{giftId,jdbcType=BIGINT},
+      </if>
+      <if test="cloudCoin != null">
+        #{cloudCoin,jdbcType=BIGINT},
+      </if>
+      <if test="giftCount != null">
+        #{giftCount,jdbcType=INTEGER},
+      </if>
+      <if test="target != null">
+        #{target,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null">
+        #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updateTime != null">
+        #{updateTime,jdbcType=TIMESTAMP},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.netease.nemo.entlive.model.po.LiveReward">
+    update live_reward
+    <set>
+      <if test="liveRecordId != null">
+        live_record_id = #{liveRecordId,jdbcType=BIGINT},
+      </if>
+      <if test="roomArchiveId != null">
+        room_archive_id = #{roomArchiveId,jdbcType=VARCHAR},
+      </if>
+      <if test="roomUuid != null">
+        room_uuid = #{roomUuid,jdbcType=VARCHAR},
+      </if>
+      <if test="userUuid != null">
+        user_uuid = #{userUuid,jdbcType=VARCHAR},
+      </if>
+      <if test="giftId != null">
+        gift_id = #{giftId,jdbcType=BIGINT},
+      </if>
+      <if test="cloudCoin != null">
+        cloud_coin = #{cloudCoin,jdbcType=BIGINT},
+      </if>
+      <if test="giftCount != null">
+        gift_count = #{giftCount,jdbcType=INTEGER},
+      </if>
+      <if test="target != null">
+        target = #{target,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null">
+        create_time = #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updateTime != null">
+        update_time = #{updateTime,jdbcType=TIMESTAMP},
+      </if>
+    </set>
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.netease.nemo.entlive.model.po.LiveReward">
+    update live_reward
+    set live_record_id = #{liveRecordId,jdbcType=BIGINT},
+      room_archive_id = #{roomArchiveId,jdbcType=VARCHAR},
+      room_uuid = #{roomUuid,jdbcType=VARCHAR},
+      user_uuid = #{userUuid,jdbcType=VARCHAR},
+      gift_id = #{giftId,jdbcType=BIGINT},
+      cloud_coin = #{cloudCoin,jdbcType=BIGINT},
+      gift_count = #{giftCount,jdbcType=INTEGER},
+      target = #{target,jdbcType=VARCHAR},
+      create_time = #{createTime,jdbcType=TIMESTAMP},
+      update_time = #{updateTime,jdbcType=TIMESTAMP}
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+
+  <select id="countRewardTotal" resultMap="LiveRewardTotalDtoMap">
+    select live_record_id,
+    IFNULL(SUM(cloud_coin * gift_count), 0) as reward_total
+    from live_reward
+    where live_record_id = #{liveRecordId,jdbcType=BIGINT}
+  </select>
+
+  <select id="countUserRewardTotal" resultMap="LiveRewardTotalDtoMap">
+    select live_record_id,
+    IFNULL(SUM(cloud_coin * gift_count), 0) as reward_total
+    from live_reward
+    where live_record_id = #{liveRecordId,jdbcType=BIGINT} and  target = #{target,jdbcType=VARCHAR}
+  </select>
+
+
+  <insert id="batchInsert" useGeneratedKeys="true">
+    INSERT INTO live_reward
+    (live_record_id, room_archive_id, room_uuid, user_uuid, gift_id, cloud_coin, target, gift_count)
+    VALUES
+    <foreach collection="pojos" item="pojo" index="index" separator=",">
+      (
+      #{pojo.liveRecordId}, #{pojo.roomArchiveId,jdbcType=VARCHAR}, #{pojo.roomUuid}, #{pojo.userUuid}, #{pojo.giftId}, #{pojo.cloudCoin}, #{pojo.target}, #{pojo.giftCount}
+      )
+    </foreach>
+  </insert>
+</mapper>

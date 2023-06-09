@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE generatorConfiguration PUBLIC "-//mybatis.org//DTD MyBatis Generator Configuration 1.0//EN"
+        "http://mybatis.org/dtd/mybatis-generator-config_1_0.dtd" >
+<generatorConfiguration>
+
+    <context id="wizardTables" targetRuntime="MyBatis3">
+
+        <plugin type="com.netease.mybatis.plugin.xml.NEOverrideXmlPlugin" />
+
+        <commentGenerator type="com.netease.mybatis.plugin.comment.NECommentGenerator" />
+
+        <!-- Where to pull the data from -->
+        <jdbcConnection driverClass="com.mysql.jdbc.Driver"
+                        connectionURL="jdbc:mysql://127.0.0.1:3306/nemo" userId="root"
+                        password="12345678">
+        </jdbcConnection>
+
+        <!-- Note that the targetProject refers to the name of the project in your
+          Eclipse IDE (not the name of the Maven project). If run outside of the IDE
+          you can specify a path instead, but there doesn't seem to be a nice way to
+          specify a single path for both usage scenarios. -->
+
+        <!-- Generates the model (the objects that hold the data) -->
+        <javaModelGenerator targetPackage="com.netease.nemo.entlive.model.po"
+                            targetProject="src/main/java">
+            <property name="enableSubPackages" value="true"/>
+            <property name="trimStrings" value="true"/>
+        </javaModelGenerator>
+
+        <!-- Generates xml -->
+        <sqlMapGenerator targetPackage="mapper" targetProject="src/main/resources">
+            <property name="enableSubPackages" value="true"/>
+        </sqlMapGenerator>
+
+        <!-- Generates dao -->
+        <javaClientGenerator type="XMLMAPPER"
+                             targetPackage="com.netease.nemo.entlive.mapper" targetProject="src/main/java">
+            <property name="enableSubPackages" value="true"/>
+        </javaClientGenerator>
+
+        <table schema="nemo" tableName="order_song" domainObjectName="OrderSong"
+               enableCountByExample="false"
+               enableDeleteByExample="false"
+               enableSelectByExample="false"
+               enableUpdateByExample="false">
+            <generatedKey column="id" sqlStatement="JDBC"/>
+        </table>
+
+        <table schema="nemo" tableName="live_record" domainObjectName="LiveRecord"
+               enableCountByExample="false"
+               enableDeleteByExample="false"
+               enableSelectByExample="false"
+               enableUpdateByExample="false">
+            <generatedKey column="id" sqlStatement="JDBC"/>
+        </table>
+
+        <table schema="nemo" tableName="live_reward" domainObjectName="LiveReward"
+               enableCountByExample="false"
+               enableDeleteByExample="false"
+               enableSelectByExample="false"
+               enableUpdateByExample="false">
+            <generatedKey column="id" sqlStatement="JDBC"/>
+        </table>
+
+    </context>
+</generatorConfiguration>

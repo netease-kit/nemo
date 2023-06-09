@@ -1,6 +1,7 @@
 package com.netease.nemo.context;
 
 import com.google.common.collect.ImmutableMap;
+import com.netease.nemo.openApi.dto.neroom.NeRoomMemberDto;
 import com.netease.nemo.util.UUIDUtil;
 import lombok.Data;
 import org.apache.commons.lang3.StringUtils;

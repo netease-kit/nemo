@@ -6,7 +6,6 @@ import com.netease.nemo.openApi.NimService;
 import com.netease.nemo.openApi.dto.antispam.RtcAntispamDto;
 import com.netease.nemo.socialchat.dto.rtc.RtcRoomInfoDto;
 import com.netease.nemo.socialchat.dto.rtc.RtcRoomUserInfoDto;
-import com.netease.nemo.socialchat.enums.RtcStatusEnum;
 import com.netease.nemo.socialchat.service.OneToOneChatService;
 import com.netease.nemo.socialchat.service.SocialChatMessageService;
 import com.netease.nemo.util.UUIDUtil;
@@ -24,8 +23,6 @@ import javax.annotation.Resource;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import static com.netease.nemo.enums.RedisKeyEnum.ONE_ONE_CHAT_RTC_RECORD_KEY;
 
 @Component
 @Slf4j
@@ -46,35 +43,6 @@ public class SocialChatScheduler {
     @Resource
     private NimService nimService;
 
-
-    /**
-     * 注：此处仅为1v1演示demo定时回收房间逻辑，落地时需根据业务自行实现
-     * 每隔2分钟扫描RTC房间列表，如果rtc房间存活时间超过10分钟则回收
-     */
-    @Scheduled(cron = "0 */2 * * * ?")
-    public void cleanRtcRoom() {
-        Context context = Context.init(UUIDUtil.getUUID());
-        long now = System.currentTimeMillis();
-
-        MDC.put("traceId", context.getTraceId());
-        Map<Object, Object> entries = nemoRedisTemplate.opsForHash().entries(ONE_ONE_CHAT_RTC_RECORD_KEY.getKeyPrefix());
-        if (CollectionUtils.isEmpty(entries)) {
-            return;
-        }
-        entries.values().forEach(o -> {
-            RtcRoomInfoDto rtcRoomInfoDto = (RtcRoomInfoDto) o;
-            if (RtcStatusEnum.START.getStatus() == rtcRoomInfoDto.getStatus() && rtcRoomInfoDto.getCreatetime() + _1v1RtcRoomLiveTime * 60 * 1000 < now) {
-                log.info("rtc房间超过10分钟，开始关闭rtc房间：ChannelId{},ChannelName:{}", rtcRoomInfoDto.getChannelId(), rtcRoomInfoDto.getChannelName());
-                try {
-                    nimService.deleteRtcRoom(rtcRoomInfoDto.getChannelId());
-                    nemoRedisTemplate.opsForHash().delete(ONE_ONE_CHAT_RTC_RECORD_KEY.getKeyPrefix(), rtcRoomInfoDto.getChannelId());
-                } catch (Exception e) {
-                    log.info("deleteRtcRoom failed.", e);
-                }
-            }
-        });
-        MDC.clear();
-    }
 
     /**
      * 注：此逻辑仅为1v1娱乐社交维护在线用户列表逻辑，落地时需根据业务自行实现

@@ -60,7 +60,7 @@ public class RedissonDistributeLockerImpl implements LockerService {
     }
 
     @Override
-    public Object tryLockAndDoAndReturn(Action action, Object... keyParts) {
+    public <T> T tryLockAndDoAndReturn(Action<T> action, Object... keyParts) {
         boolean lock = false;
         long start = System.nanoTime();
         String lockKey = RedisUtil.joinKey(keyParts);

@@ -4,7 +4,7 @@ import com.google.gson.JsonObject;
 import com.netease.nemo.enums.RtcNotifyEnum;
 import com.netease.nemo.exception.BsException;
 import com.netease.nemo.openApi.dto.antispam.RtcAntispamDto;
-import com.netease.nemo.service.NimNotifyService;
+import com.netease.nemo.service.NotifyService;
 import com.netease.nemo.socialchat.enums.RtcStatusEnum;
 import com.netease.nemo.socialchat.enums.RtcUserStatusEnum;
 import com.netease.nemo.socialchat.parameter.rtcNotify.RtcRoomNotifyParam;
@@ -19,7 +19,7 @@ import javax.annotation.Resource;
 
 @Service("socialChatNotifyServiceImpl")
 @Slf4j
-public class SocialChatNotifyServiceImpl implements NimNotifyService {
+public class SocialChatNotifyServiceImpl implements NotifyService {
 
     @Resource
     private SecurityAuditService securityAuditService;

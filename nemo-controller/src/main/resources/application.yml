@@ -23,4 +23,4 @@ spring:
 mybatis:
   configuration:
     map-ß-to-camel-case: true
-  mapper-locations: classpath:mapper/**/*.xml
+  mapper-locations: classpath*:mapper/**/*.xml

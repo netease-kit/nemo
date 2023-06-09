@@ -49,7 +49,7 @@ public class CheckSumBuilder {
      *            the raw bytes from the digest.
      * @return the formatted bytes.
      */
-    protected static String getFormattedText(byte[] bytes) {
+    public static String getFormattedText(byte[] bytes) {
         int len = bytes.length;
         StringBuilder buf = new StringBuilder(len * 2);
         // 把密文转换成十六进制的字符串形式
