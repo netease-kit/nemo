@@ -137,7 +137,7 @@ public class NeRoomService {
             throw new BsException(ErrorCode.INTERNAL_SERVER_ERROR, "roomArchiveId Can not Be Null");
         }
 
-        String url = String.format("/neroom/seats/v1/slot_list/%s", roomArchiveId);
+        String url = String.format("/neroom/v1/seats/slot_list/%s", roomArchiveId);
 
         try {
             NeRoomResponse neRoomResponse = yunXinServer.requestEntityForNeRoom(url, HttpMethod.GET, null);
