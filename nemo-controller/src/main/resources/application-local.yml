@@ -30,8 +30,8 @@ spring:
 
 yunxin:
   origin:
-    appKey:  # 云信appkey,如果需要申请应用可联系商务
-    appSecret:  # 云信appSecret
+    appKey: ${APPKEY} # 云信appkey,如果需要申请应用可联系商务
+    appSecret: ${APPSECRET} # 云信appSecret
     nimHost: https://api.netease.im
     neRoomHost: https://roomkit-dev.netease.im/
     securityAuditHost: https://logic-dev.netease.im/

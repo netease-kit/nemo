@@ -3,6 +3,9 @@ services:
   nemoService:
     container_name: nemo
     image: nemo-api:1.0
+    environment:
+      APPKEY: ${APPKEY} # 添加云信appkey
+      APPSECRET: ${APPSECRET} # 添加云信APPSECRET
     volumes:
       - ./data/nemoService/:/data
     networks:
