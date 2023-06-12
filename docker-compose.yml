@@ -2,7 +2,7 @@ version: '3'
 services:
   nemoService:
     container_name: nemo
-    image: nemo-api:1.0
+    image: yunxindev/nemo-api:1.0
     environment:
       APPKEY: ${APPKEY} # 添加云信appkey
       APPSECRET: ${APPSECRET} # 添加云信APPSECRET
