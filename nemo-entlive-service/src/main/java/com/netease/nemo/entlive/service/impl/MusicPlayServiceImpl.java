@@ -28,8 +28,10 @@ import com.netease.nemo.util.gson.GsonUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.BooleanUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
+import java.util.List;
 
 /**
  * 歌曲播放服务
@@ -118,6 +120,8 @@ public class MusicPlayServiceImpl implements MusicPlayService {
         // 开始播放是设置点歌台状态
         if (MusicPlayerStatusEnum.PLAY.getStatus() == param.getAction()) {
             setSongPlaying(playDetailInfoDto.getOrderId());
+            // 重置其他点歌歌曲的状态
+            resetOtherOrderSongStatus(liveRecordId, playDetailInfoDto.getOrderId());
         }
 
         MusicPlayNotifyEventDto musicPlayNotifyEventDto = new MusicPlayNotifyEventDto(getOperatorInfoDto(userUuid));
@@ -186,6 +190,8 @@ public class MusicPlayServiceImpl implements MusicPlayService {
 
         // 设置点歌台歌曲状态
         setSongPlaying(orderSong);
+        // 重置其他点歌歌曲的状态
+        resetOtherOrderSongStatus(liveRecordId, orderSong.getId());
 
         // 发送歌曲播放的消息
         sendMusicPlayerMessage(musicPlayNotifyEventDto, playDetailInfoDto.getRoomUuid(), EventTypeEnum.ENT_MUSIC_PLAY.getType());
@@ -222,6 +228,24 @@ public class MusicPlayServiceImpl implements MusicPlayService {
         }
         orderSong.setStatus(OrderSongStatusEnum.PLAYING.getCode());
         orderSongMapperWrapper.updateByPrimaryKeySelective(orderSong);
+    }
+
+    /**
+     * 重置其他歌曲的状态
+     *
+     * @param liveRecordId   直播唯一记录
+     * @param playingOrderId 当前播放的点歌ID
+     */
+    private void resetOtherOrderSongStatus(Long liveRecordId, Long playingOrderId) {
+        List<OrderSong> orderSongs = orderSongMapperWrapper.selectByLiveRecordId(liveRecordId);
+        if (!CollectionUtils.isEmpty(orderSongs)) {
+            orderSongs.stream()
+                    .filter(o -> (o.getStatus() == OrderSongStatusEnum.PLAYING.getCode() && !o.getId().equals(playingOrderId)))
+                    .forEach(o -> {
+                        o.setStatus(OrderSongStatusEnum.WAITING.getCode());
+                        orderSongMapperWrapper.updateByPrimaryKeySelective(o);
+                    });
+        }
     }
 
     private BasicUserDto getOperatorInfoDto(String userUuid) {
