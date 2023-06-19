@@ -9,6 +9,8 @@ public class RedisUtil {
 
     private static final Joiner JOINER = Joiner.on(":").useForNull(StringKit.NULL);
 
+    private static final Joiner JOINER_SPRING_CACHE = Joiner.on("::").useForNull(StringKit.NULL);
+
     private static final Splitter SPLITTER = Splitter.on(":").trimResults();
 
     public static String joinKey(Object... parts) {
@@ -19,6 +21,16 @@ public class RedisUtil {
             return String.valueOf(parts[0]);
         }
         return JOINER.join(parts);
+    }
+
+    public static String springCacheJoinKey(Object... parts) {
+        if(parts.length == 0){
+            return "";
+        }
+        if(parts.length == 1){
+            return String.valueOf(parts[0]);
+        }
+        return JOINER_SPRING_CACHE.join(parts);
     }
 
     public static List<String> splitKey(String key) {

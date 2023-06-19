@@ -5,6 +5,7 @@ import com.netease.nemo.config.YunXinConfigProperties;
 import com.netease.nemo.exception.BsException;
 import com.netease.nemo.openApi.dto.response.ImResponse;
 import com.netease.nemo.openApi.dto.response.LiveWallSolutionResponse;
+import com.netease.nemo.openApi.dto.response.NeRoomResponse;
 import com.netease.nemo.util.CheckSumBuilder;
 import com.netease.nemo.util.UUIDUtil;
 import com.netease.nemo.util.gson.GsonUtil;
@@ -22,14 +23,11 @@ import java.util.Map;
 @Slf4j
 public class YunXinServer {
 
-    private final RestTemplate restTemplate;
+    @Resource
+    private  RestTemplate restTemplate;
 
     @Resource
     private YunXinConfigProperties yunXinConfigProperties;
-
-    public YunXinServer() {
-        restTemplate = new RestTemplate();
-    }
 
     /**
      * IM请求
@@ -53,6 +51,22 @@ public class YunXinServer {
         HttpEntity entity = new HttpEntity(fromData, httpHeaders);
 
         return requestForEntity(yunXinConfigProperties.getNimHost(), uri, method, entity, responseType);
+    }
+
+    /**
+     * NeRoom请求
+     *
+     * @param url  url
+     * @param body body
+     * @return NeRoomResponse
+     */
+    public NeRoomResponse requestEntityForNeRoom(String url, HttpMethod method, Object body) {
+        HttpHeaders httpHeaders = new HttpHeaders();
+        addCheckSumHeader(httpHeaders);
+        httpHeaders.add("Content-Type", "application/json;charset=utf-8");
+        HttpEntity entity = new HttpEntity(body, httpHeaders);
+
+        return requestForEntity(yunXinConfigProperties.getNeRoomHost(), url, method, entity, NeRoomResponse.class);
     }
 
     /**

@@ -3,7 +3,7 @@ package com.netease.nemo.controller.socialChat;
 import com.google.gson.JsonObject;
 import com.netease.nemo.annotation.RestResponseBody;
 import com.netease.nemo.config.YunXinConfigProperties;
-import com.netease.nemo.service.NimNotifyService;
+import com.netease.nemo.service.NotifyService;
 import com.netease.nemo.util.CheckSumBuilder;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -24,7 +24,7 @@ public class NotifyController {
 
     @Autowired
     @Qualifier("socialChatNotifyServiceImpl")
-    private NimNotifyService nimNotifyService;
+    private NotifyService notifyService;
 
     /**
      * IM和RTC的抄送处理
@@ -51,7 +51,7 @@ public class NotifyController {
             if (verifyChecksum.equals(checksum)) {
                 String type = request.getHeader("type");
                 if ("G2".equals(type)) {
-                    nimNotifyService.handlerNotify(requestBody);
+                    notifyService.handlerNotify(requestBody);
                 }
             } else {
                 log.error("Bad checksum.");

@@ -30,16 +30,17 @@ spring:
 
 yunxin:
   origin:
-    appKey:  # 云信appkey,如果需要申请应用可联系商务
-    appSecret:  # 云信appSecret
-    nimHost: https://api.netease.im/ # 云信IM地址 国内默认: https://api.netease.im/
-    neRoomHost: https://roomkit.netease.im/ # 云信NERoom服务地址 国内默认: https://roomkit.netease.im/
-    securityAuditHost: https://logic-dev.netease.im/ # 云信安全通服务地址 国内默认: https://logic-dev.netease.im/
-    rtcHost: https://logic-dev.netease.im/ # 云信RTC服务地址 国内默认: https://logic-dev.netease.im/
+    appKey: ${APPKEY} # 云信appkey,如果需要申请应用可联系商务
+    appSecret: ${APPSECRET} # 云信appSecret
+    nimHost: https://api.netease.im
+    neRoomHost: https://roomkit-dev.netease.im/
+    securityAuditHost: https://logic-dev.netease.im/
+    rtcHost: https://logic-dev.netease.im/
 business:
   yunxinAssistAccid: yunxinassistaccid_1 #云信派对小助手
   systemAccid: nimsystembot_1  #服务端系统Nim账号
   1v1RtcRoomLiveTime: 10 # 单位（分钟） 1v1RTC房间存活时间，demo默认10分钟回收房间
+  voiceRoomConfigId: 76 # 语聊房模板
 
 server:
   port: 9981

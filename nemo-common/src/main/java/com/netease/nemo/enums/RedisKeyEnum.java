@@ -13,8 +13,26 @@ public enum RedisKeyEnum {
     ONE_ONE_CHAT_RTC_USER_RECORD_KEY("one_one_chat_room_rtc_user_record_","1v1娱乐社交RTC成员信息记录【hashMap】"),
     ANTISPAM_VIOLATIONS_LIST_KEY("antispam_violations_list","安全通审核违规数据记录key"),
     ANTISPAM_VIOLATIONS_USER_LIST_KEY("antispam_violations_user_list","安全通审核违规数据记录key"),
-    TAG_USER_LOCK("USER_LOCK", "用户锁");
+    TAG_USER_LOCK("USER_LOCK", "用户锁"),
+    ENT_CREATE_LIVE_ROOM_LOCK_KEY("ent_create_live_room_lock_key_","创建直播房间lock key tag"),
+    ENT_LIVE_ROOM_LOCK_KEY("ent_live_room_lock_key_","直播房间lock key tag"),
+    NE_ROOM_MEMBER_TABLE_KEY("ent_ne_room_table_key","NeRoom成员表"),
+    ENT_SONG_ORDER("ent_song_order_lock_key_","点歌台 lock key tag"),
 
+    /**
+     * 歌曲播放状态 lock key
+     */
+    ENT_MUSIC_PLAYER_LOCKER_KEY("ent_music_player_locker_key_","歌曲播放状态 lock key") ,
+
+    /**
+     * 直播房间播放歌曲信息key
+     */
+    ENT_MUSIC_PLAY_INFO_KEY("ent_music_play_info_", "直播房间播放歌曲信息key"),
+
+    /**
+     * 主播直播房间歌曲准备key  table  key：ent_music_play_ready_info_:{liveRecordId}L:{orderId} filed: userUuid value: 歌曲状态
+     */
+    ENT_MUSIC_PLAY_READY_INFO_KEY("ent_music_play_ready_info_", "主播直播房间歌曲准备信息key");
     ;
     /** redis的key前缀 */
     private final String keyPrefix;

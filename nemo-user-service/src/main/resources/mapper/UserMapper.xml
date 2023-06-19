@@ -180,4 +180,13 @@
     from user
     where state = 1 and mobile = #{mobile,jdbcType=VARCHAR}
   </select>
+
+  <select id="selectByUserUuids" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List"/>
+    from user
+    where user_uuid in
+    <foreach collection="userUuids" open="(" close=")" separator="," item="user">#{user}</foreach>
+    and state = 1
+  </select>
 </mapper>

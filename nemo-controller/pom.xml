@@ -26,6 +26,12 @@
             <groupId>com.netease</groupId>
             <artifactId>nemo-common</artifactId>
         </dependency>
+
+        <dependency>
+            <groupId>com.netease</groupId>
+            <artifactId>nemo-entlive-service</artifactId>
+        </dependency>
+
     </dependencies>
 
     <build>

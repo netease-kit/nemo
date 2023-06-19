@@ -4,14 +4,12 @@ import com.google.gson.JsonObject;
 import com.netease.nemo.dto.UserDto;
 import com.netease.nemo.enums.EventTypeEnum;
 import com.netease.nemo.mapper.GiftMapper;
-import com.netease.nemo.model.po.User;
 import com.netease.nemo.model.po.UserReward;
 import com.netease.nemo.openApi.NimService;
 import com.netease.nemo.openApi.dto.antispam.RtcAntispamDto;
-import com.netease.nemo.openApi.enums.ImNotifyMsgTypeEnum;
 import com.netease.nemo.openApi.enums.ImOpeEnum;
 import com.netease.nemo.service.UserService;
-import com.netease.nemo.socialchat.dto.message.EventDto;
+import com.netease.nemo.dto.EventDto;
 import com.netease.nemo.socialchat.dto.message.AntisMessage;
 import com.netease.nemo.socialchat.dto.message.RewardMessage;
 import com.netease.nemo.socialchat.dto.message.UserUnBlockMessage;
@@ -19,6 +17,7 @@ import com.netease.nemo.socialchat.dto.rtc.RtcRoomInfoDto;
 import com.netease.nemo.socialchat.dto.rtc.RtcRoomUserInfoDto;
 import com.netease.nemo.socialchat.enums.RtcStatusEnum;
 import com.netease.nemo.socialchat.util.YunXinAssistantRewardMsgUtil;
+import com.netease.nemo.wrapper.GiftMapperWrapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -46,7 +45,7 @@ public class SocialChatMessageService {
     private OneToOneChatService oneToOneChatService;
 
     @Resource
-    private GiftMapper giftMapper;
+    private GiftMapperWrapper giftMapperWrapper;
 
     @Resource
     private NimService nimService;
@@ -121,7 +120,7 @@ public class SocialChatMessageService {
         nimService.sendImCustomMsg(user.getUserUuid(), target, ImOpeEnum.SINGLE_CHAT_MESSAGE.getOpe(), new EventDto(message, EventTypeEnum.SOCIAL_CHAT_USER_REWARD.getType()));
 
         // 云信小秘书发送打赏消息
-        JsonObject rewardMsg = YunXinAssistantRewardMsgUtil.buildRewardMsg(userReward, giftMapper.selectByPrimaryKey(userReward.getGiftId()), user);
+        JsonObject rewardMsg = YunXinAssistantRewardMsgUtil.buildRewardMsg(userReward, giftMapperWrapper.selectByPrimaryKey(userReward.getGiftId()), user);
         nimService.sendImCustomMsg(yunxinAssistAccid, target, ImOpeEnum.SINGLE_CHAT_MESSAGE.getOpe(), new EventDto(rewardMsg, EventTypeEnum.SOCIAL_CHAT_USER_REWARD_YUN_XIN_ASSIST.getType()));
     }
 

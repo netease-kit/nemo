@@ -23,7 +23,7 @@ public class RedisDistributeLockerImpl implements LockerService {
     @Override
     public void lock(String key) {
         try {
-            tryLock(key, 10, 10, TimeUnit.SECONDS);
+            tryLock(key, 3, 5, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
             log.debug("lock failed.", e);
         }
@@ -37,7 +37,7 @@ public class RedisDistributeLockerImpl implements LockerService {
     @Override
     public void lock(String key, int timeout) {
         try {
-            tryLock(key, timeout, 10, TimeUnit.SECONDS);
+            tryLock(key, timeout, 5, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
             log.debug("lock failed.", e);
         }
@@ -46,7 +46,7 @@ public class RedisDistributeLockerImpl implements LockerService {
     @Override
     public void lock(String key, int timeout, TimeUnit unit) {
         try {
-            tryLock(key, timeout, 10, unit);
+            tryLock(key, timeout, 5, unit);
         } catch (InterruptedException e) {
             log.debug("lock failed.", e);
         }
@@ -55,7 +55,7 @@ public class RedisDistributeLockerImpl implements LockerService {
     @Override
     public boolean tryLock(String key) {
         try {
-            return tryLock(key, 10, 10, TimeUnit.SECONDS);
+            return tryLock(key, 3, 5, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
             return false;
         }
@@ -74,7 +74,7 @@ public class RedisDistributeLockerImpl implements LockerService {
         // 获取锁失败
         long newTime = System.currentTimeMillis();
         // 等待过期时间
-        long expiredTime = newTime + waitTime;
+        long expiredTime = newTime + waitTime * 1000;
         // 不断尝试获取锁成功返回
         while (System.currentTimeMillis() < expiredTime) {
             Boolean retryFlag = setNx(key, value, leaseTime, TimeUnit.SECONDS);
@@ -93,17 +93,17 @@ public class RedisDistributeLockerImpl implements LockerService {
         String lockKey = RedisUtil.joinKey(keyParts);
         try {
             // TODO 业务自行配置 尝试获取时间及锁持有时间
-            lock = this.tryLock(lockKey, 10, 10, TimeUnit.SECONDS);
+            lock = this.tryLock(lockKey, 3, 5, TimeUnit.SECONDS);
             long end = System.nanoTime();
 
             if (!lock) {
                 log.error("get Locker failed. the key:{}, cost ms: {}", lockKey, end - start);
-                throw new BsException(ErrorCode.INTERNAL_SERVER_ERROR);
+                throw new BsException(ErrorCode.INTERNAL_SERVER_ERROR, "操作频繁,请稍后重试!");
             }
             return action.doAction();
         } catch (InterruptedException e) {
             log.error("tryLockAndDoAndReturn failed.", e);
-            throw new BsException(ErrorCode.INTERNAL_SERVER_ERROR);
+            throw new BsException(ErrorCode.INTERNAL_SERVER_ERROR, "操作频繁,请稍后重试!");
         } finally {
             if (lock) {
                 unlock(lockKey);
@@ -118,17 +118,17 @@ public class RedisDistributeLockerImpl implements LockerService {
         String lockKey = RedisUtil.joinKey(keyParts);
         try {
             // TODO 业务自行配置 尝试获取时间及锁持有时间
-            lock = this.tryLock(lockKey, 10, 10, TimeUnit.SECONDS);
+            lock = this.tryLock(lockKey, 3, 5, TimeUnit.SECONDS);
             long end = System.nanoTime();
 
             if (!lock) {
                 log.error("get Locker failed. the key:{}, cost ms: {}", lockKey, end - start);
-                throw new BsException(ErrorCode.INTERNAL_SERVER_ERROR);
+                throw new BsException(ErrorCode.INTERNAL_SERVER_ERROR, "操作频繁,请稍后重试!");
             }
             action.doAction();
         } catch (InterruptedException e) {
             log.error("tryLockAndDoAndReturn failed.", e);
-            throw new BsException(ErrorCode.INTERNAL_SERVER_ERROR);
+            throw new BsException(ErrorCode.INTERNAL_SERVER_ERROR, "操作频繁,请稍后重试!");
         } finally {
             if (lock) {
                 unlock(lockKey);

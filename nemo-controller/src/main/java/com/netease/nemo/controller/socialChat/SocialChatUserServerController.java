@@ -6,6 +6,7 @@ import com.netease.nemo.enums.RedisKeyEnum;
 import com.netease.nemo.locker.LockerService;
 import com.netease.nemo.parameter.CreateUserParam;
 import com.netease.nemo.parameter.UpdateUserParam;
+import com.netease.nemo.service.TestUserService;
 import com.netease.nemo.service.UserService;
 import com.netease.nemo.socialchat.dto.OnLineUserDto;
 import lombok.extern.slf4j.Slf4j;
@@ -26,10 +27,13 @@ import static com.netease.nemo.enums.RedisKeyEnum.TAG_USER_LOCK;
 @RequestMapping("/nemo/socialChat/server/user")
 @Slf4j
 @RestResponseBody
-public class UserServerController {
+public class SocialChatUserServerController {
 
     @Resource
     private UserService userService;
+
+    @Resource
+    private TestUserService testUserService;
 
     @Resource(name = "nemoRedisTemplate")
     private RedisTemplate<String, Object> nemoRedisTemplate;
@@ -72,6 +76,6 @@ public class UserServerController {
      */
     @PostMapping(value = "/initOneToOne")
     public Object initOneToOne() {
-        return userService.initOneToOneTestUser();
+        return testUserService.initOneToOneTestUser();
     }
 }

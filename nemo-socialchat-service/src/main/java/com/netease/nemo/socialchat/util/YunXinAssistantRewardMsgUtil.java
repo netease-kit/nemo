@@ -3,7 +3,6 @@ package com.netease.nemo.socialchat.util;
 import com.google.gson.JsonObject;
 import com.netease.nemo.dto.UserDto;
 import com.netease.nemo.model.po.Gift;
-import com.netease.nemo.model.po.User;
 import com.netease.nemo.model.po.UserReward;
 
 public class YunXinAssistantRewardMsgUtil {

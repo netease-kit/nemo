@@ -24,6 +24,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * 云信IM、rtc相关API
+ */
 @Service
 @Slf4j
 public class NimService {

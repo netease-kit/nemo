@@ -4,6 +4,8 @@ import com.netease.nemo.model.po.User;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
+import java.util.List;
+
 @Mapper
 public interface UserMapper {
 
@@ -22,4 +24,6 @@ public interface UserMapper {
     User selectByUserUuid(@Param("userUuid") String userUuid);
 
     User getUserByMobile(@Param("mobile") String mobile);
+
+    List<User> selectByUserUuids(@Param("userUuids") List<String> userUuids);
 }

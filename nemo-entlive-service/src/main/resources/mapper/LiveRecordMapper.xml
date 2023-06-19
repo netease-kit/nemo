@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.netease.nemo.entlive.mapper.LiveRecordMapper">
+  <resultMap id="BaseResultMap" type="com.netease.nemo.entlive.model.po.LiveRecord">
+    <id column="id" jdbcType="BIGINT" property="id" />
+    <result column="room_archive_id" jdbcType="VARCHAR" property="roomArchiveId" />
+    <result column="room_uuid" jdbcType="VARCHAR" property="roomUuid" />
+    <result column="room_name" jdbcType="VARCHAR" property="roomName" />
+    <result column="user_uuid" jdbcType="VARCHAR" property="userUuid" />
+    <result column="live_topic" jdbcType="VARCHAR" property="liveTopic" />
+    <result column="cover" jdbcType="VARCHAR" property="cover" />
+    <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+    <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
+    <result column="status" jdbcType="TINYINT" property="status" />
+    <result column="live" jdbcType="TINYINT" property="live" />
+    <result column="live_type" jdbcType="TINYINT" property="liveType" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    id, room_archive_id, room_uuid, room_name, user_uuid, live_topic, cover, create_time, 
+    update_time, status, live, live_type
+  </sql>
+  <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from live_record
+    where id = #{id,jdbcType=BIGINT}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+    delete from live_record
+    where id = #{id,jdbcType=BIGINT}
+  </delete>
+  <insert id="insert" keyColumn="id" keyProperty="id" parameterType="com.netease.nemo.entlive.model.po.LiveRecord" useGeneratedKeys="true">
+    insert into live_record (room_archive_id, room_uuid, room_name, 
+      user_uuid, live_topic, cover, 
+      create_time, update_time, status, 
+      live, live_type)
+    values (#{roomArchiveId,jdbcType=VARCHAR}, #{roomUuid,jdbcType=VARCHAR}, #{roomName,jdbcType=VARCHAR}, 
+      #{userUuid,jdbcType=VARCHAR}, #{liveTopic,jdbcType=VARCHAR}, #{cover,jdbcType=VARCHAR}, 
+      #{createTime,jdbcType=TIMESTAMP}, #{updateTime,jdbcType=TIMESTAMP}, #{status,jdbcType=TINYINT}, 
+      #{live,jdbcType=TINYINT}, #{liveType,jdbcType=TINYINT})
+  </insert>
+  <insert id="insertSelective" keyColumn="id" keyProperty="id" parameterType="com.netease.nemo.entlive.model.po.LiveRecord" useGeneratedKeys="true">
+    insert into live_record
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="roomArchiveId != null">
+        room_archive_id,
+      </if>
+      <if test="roomUuid != null">
+        room_uuid,
+      </if>
+      <if test="roomName != null">
+        room_name,
+      </if>
+      <if test="userUuid != null">
+        user_uuid,
+      </if>
+      <if test="liveTopic != null">
+        live_topic,
+      </if>
+      <if test="cover != null">
+        cover,
+      </if>
+      <if test="createTime != null">
+        create_time,
+      </if>
+      <if test="updateTime != null">
+        update_time,
+      </if>
+      <if test="status != null">
+        status,
+      </if>
+      <if test="live != null">
+        live,
+      </if>
+      <if test="liveType != null">
+        live_type,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="roomArchiveId != null">
+        #{roomArchiveId,jdbcType=VARCHAR},
+      </if>
+      <if test="roomUuid != null">
+        #{roomUuid,jdbcType=VARCHAR},
+      </if>
+      <if test="roomName != null">
+        #{roomName,jdbcType=VARCHAR},
+      </if>
+      <if test="userUuid != null">
+        #{userUuid,jdbcType=VARCHAR},
+      </if>
+      <if test="liveTopic != null">
+        #{liveTopic,jdbcType=VARCHAR},
+      </if>
+      <if test="cover != null">
+        #{cover,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null">
+        #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updateTime != null">
+        #{updateTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="status != null">
+        #{status,jdbcType=TINYINT},
+      </if>
+      <if test="live != null">
+        #{live,jdbcType=TINYINT},
+      </if>
+      <if test="liveType != null">
+        #{liveType,jdbcType=TINYINT},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.netease.nemo.entlive.model.po.LiveRecord">
+    update live_record
+    <set>
+      <if test="roomArchiveId != null">
+        room_archive_id = #{roomArchiveId,jdbcType=VARCHAR},
+      </if>
+      <if test="roomUuid != null">
+        room_uuid = #{roomUuid,jdbcType=VARCHAR},
+      </if>
+      <if test="roomName != null">
+        room_name = #{roomName,jdbcType=VARCHAR},
+      </if>
+      <if test="userUuid != null">
+        user_uuid = #{userUuid,jdbcType=VARCHAR},
+      </if>
+      <if test="liveTopic != null">
+        live_topic = #{liveTopic,jdbcType=VARCHAR},
+      </if>
+      <if test="cover != null">
+        cover = #{cover,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null">
+        create_time = #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updateTime != null">
+        update_time = #{updateTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="status != null">
+        status = #{status,jdbcType=TINYINT},
+      </if>
+      <if test="live != null">
+        live = #{live,jdbcType=TINYINT},
+      </if>
+      <if test="liveType != null">
+        live_type = #{liveType,jdbcType=TINYINT},
+      </if>
+    </set>
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.netease.nemo.entlive.model.po.LiveRecord">
+    update live_record
+    set room_archive_id = #{roomArchiveId,jdbcType=VARCHAR},
+      room_uuid = #{roomUuid,jdbcType=VARCHAR},
+      room_name = #{roomName,jdbcType=VARCHAR},
+      user_uuid = #{userUuid,jdbcType=VARCHAR},
+      live_topic = #{liveTopic,jdbcType=VARCHAR},
+      cover = #{cover,jdbcType=VARCHAR},
+      create_time = #{createTime,jdbcType=TIMESTAMP},
+      update_time = #{updateTime,jdbcType=TIMESTAMP},
+      status = #{status,jdbcType=TINYINT},
+      live = #{live,jdbcType=TINYINT},
+      live_type = #{liveType,jdbcType=TINYINT}
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+
+  <select id="selectByUserUuidAndType" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List" />
+    from live_record
+    where user_uuid = #{userUuid,jdbcType=VARCHAR}
+    and live_type = #{liveType,jdbcType=TINYINT} and status = 1
+  </select>
+
+  <select id="selectByRoomArchiveId" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List" />
+    from live_record
+    where room_archive_id = #{roomArchiveId,jdbcType=VARCHAR}
+    and status = 1
+  </select>
+
+  <select id="selectByUserUuid" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List" />
+    from live_record
+    where user_uuid = #{userUuid,jdbcType=VARCHAR}
+    and status = 1
+  </select>
+
+  <select id="getLivingRecords" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List"/>
+    from live_record
+    where live_type = #{liveType,jdbcType=TINYINT}
+    and status = 1
+    <if test="live != null">
+      AND live = #{live,jdbcType=TINYINT}
+    </if>
+    <if test="excludeUserUuid != null">
+      and user_uuid != #{excludeUserUuid,jdbcType=VARCHAR}
+    </if>
+    order by create_time desc
+  </select>
+</mapper>

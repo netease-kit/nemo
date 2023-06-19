@@ -66,7 +66,7 @@ public interface LockerService {
      * @param keyParts 锁key
      * @return 返回值
      */
-    Object tryLockAndDoAndReturn(Action action, Object... keyParts);
+    <T> T tryLockAndDoAndReturn(Action<T> action, Object... keyParts);
 
     /**
      * 加锁后执行Action

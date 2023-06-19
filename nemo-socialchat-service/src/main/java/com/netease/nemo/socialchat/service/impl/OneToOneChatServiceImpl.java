@@ -5,8 +5,6 @@ import com.netease.nemo.context.Context;
 import com.netease.nemo.dto.UserDto;
 import com.netease.nemo.enums.RedisKeyEnum;
 import com.netease.nemo.exception.BsException;
-import com.netease.nemo.mapper.GiftMapper;
-import com.netease.nemo.mapper.UserRewardMapper;
 import com.netease.nemo.model.po.Gift;
 import com.netease.nemo.model.po.UserReward;
 import com.netease.nemo.service.UserService;
@@ -19,13 +17,17 @@ import com.netease.nemo.socialchat.parameter.rtcNotify.RtcRoomUserNotifyParam;
 import com.netease.nemo.socialchat.service.OneToOneChatService;
 import com.netease.nemo.socialchat.service.SocialChatMessageService;
 import com.netease.nemo.util.ObjectMapperUtil;
+import com.netease.nemo.wrapper.GiftMapperWrapper;
+import com.netease.nemo.wrapper.UserRewardMapperWrapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
+import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -47,10 +49,10 @@ public class OneToOneChatServiceImpl implements OneToOneChatService {
     private SocialChatMessageService socialChatMessageService;
 
     @Resource
-    private UserRewardMapper userRewardMapper;
+    private UserRewardMapperWrapper userRewardMapperWrapper;
 
     @Resource
-    private GiftMapper giftMapper;
+    private GiftMapperWrapper giftMapperWrapper;
 
     @Override
     public void reporter(String userUuid, String deviceId) {
@@ -122,6 +124,8 @@ public class OneToOneChatServiceImpl implements OneToOneChatService {
             return;
         }
         nemoRedisTemplate.opsForHash().put(ONE_ONE_CHAT_RTC_RECORD_KEY.getKeyPrefix(), param.getChannelId(), ObjectMapperUtil.map(param, RtcRoomInfoDto.class));
+        // 缓存保存时间30天，业务落地时可自行选择保存时间，或者进行DB落库
+        nemoRedisTemplate.expire(ONE_ONE_CHAT_RTC_RECORD_KEY.getKeyPrefix(), Duration.ofDays(30));
     }
 
     @Override
@@ -135,6 +139,8 @@ public class OneToOneChatServiceImpl implements OneToOneChatService {
 
         String rtcUserTableKey = ONE_ONE_CHAT_RTC_USER_RECORD_KEY.getKeyPrefix() + rtcRoomUserInfoDto.getChannelId();
         nemoRedisTemplate.opsForHash().put(rtcUserTableKey, param.getUid(), rtcRoomUserInfoDto);
+        // 缓存保存时间30天，业务落地时可自行选择保存时间，或者进行DB落库
+        nemoRedisTemplate.expire(rtcUserTableKey, Duration.ofDays(30));
     }
 
     @Override
@@ -161,11 +167,12 @@ public class OneToOneChatServiceImpl implements OneToOneChatService {
     }
 
     @Override
+    @Transactional
     public void userReward(UserRewardDto userRewardDto) {
         if (userRewardDto == null) {
             return;
         }
-        Gift gift = giftMapper.selectByPrimaryKey(userRewardDto.getGiftId());
+        Gift gift = giftMapperWrapper.selectByPrimaryKey(userRewardDto.getGiftId());
         if (gift == null) {
             throw new BsException(ErrorCode.GIFT_NOT_EXIST);
         }
@@ -175,7 +182,7 @@ public class OneToOneChatServiceImpl implements OneToOneChatService {
         UserReward userReward = ObjectMapperUtil.map(userRewardDto, UserReward.class);
         userReward.setCloudCoin(gift.getCloudCoin());
 
-        userRewardMapper.insertSelective(userReward);
+        userRewardMapperWrapper.insertSelective(userReward);
 
         // TODO
         // 被打赏者账户加礼物对应的云币

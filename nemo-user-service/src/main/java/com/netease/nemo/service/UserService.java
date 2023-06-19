@@ -15,6 +15,8 @@ public interface UserService {
 
     UserDto getUser(String userUuid);
 
+    List<UserDto> getUsers(List<String> userUuids);
+
     UserDto getUserByUidAndDeviceId(String userUuid, String deviceId);
 
     UserDto getUserByRtcUid(Long rtcUid);
@@ -26,9 +28,9 @@ public interface UserService {
     void updateUser(UpdateUserParam updateUserParam);
 
     /**
-     * 注： 云信派对1v1娱乐demo体验账号初始化
-     *
-     * @return 返回测试账号
+     * 创建NeRoom账号
+     * @param createUserParam 账户信息
+     * @return 返回UserDto
      */
-    List<UserDto> initOneToOneTestUser();
+    UserDto createNeRoomUser(CreateUserParam createUserParam);
 }

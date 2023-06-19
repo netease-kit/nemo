@@ -16,7 +16,7 @@ import javax.annotation.Resource;
 @Slf4j
 @RestResponseBody
 @TokenAuth
-public class UserController {
+public class SocialChatUserController {
 
     @Resource
     private UserService userService;

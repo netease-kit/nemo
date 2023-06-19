@@ -43,7 +43,7 @@ public class NemoFilter implements Filter {
             context.setClientIp(IPUtil.getRealClientIpAddr(requestWrapper));
             context.setHeaderMap(getHeader(httpServletRequest));
             context.setApiParam();
-            log.info("context init.");
+            log.debug("context init.");
             filterChain.doFilter(requestWrapper, servletResponse);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
