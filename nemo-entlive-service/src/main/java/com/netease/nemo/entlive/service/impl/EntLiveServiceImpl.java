@@ -145,7 +145,7 @@ public class EntLiveServiceImpl implements EntLiveService {
         roomSeatConfig.setSeatCount(param.getSeatCount() <= 0 ? 9 : param.getSeatCount());
         createNeRoomParam.setRoomSeatConfig(roomSeatConfig);
 
-        createNeRoomParam.setRoomConfig(CreateNeRoomParam.RoomConfig.buildEntVoiceRoom());
+        createNeRoomParam.setRoomConfig(new CreateNeRoomParam.RoomConfig(CreateNeRoomParam.ResourceConfig.buildEntVoiceRoom()));
         return createNeRoomParam;
     }
 
