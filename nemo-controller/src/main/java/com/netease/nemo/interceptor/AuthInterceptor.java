@@ -42,8 +42,8 @@ public class AuthInterceptor implements HandlerInterceptor {
             return true;
         }
 
-        if (((HandlerMethod) handler).getBeanType().getAnnotation(Checksum.class) != null) {
-            log.debug("执行Checksum鉴权, method: {}", ((HandlerMethod) handler).getBeanType().getName());
+        if (((HandlerMethod) handler).getMethodAnnotation(Checksum.class) != null) {
+            log.debug("执行Checksum鉴权, method: {}", ((HandlerMethod) handler).getMethod().getName());
             checkCheckSum(request);
             return true;
         }

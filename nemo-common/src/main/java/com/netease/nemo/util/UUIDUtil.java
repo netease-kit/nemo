@@ -66,4 +66,15 @@ public class UUIDUtil {
         return sb.toString();
     }
 
+    public static String getRandomNumber(int length) {
+        String str = "0123456789";
+        Random random = new Random();
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < length; i++) {
+            int number = random.nextInt(str.length());
+            sb.append(str.charAt(number));
+        }
+        return sb.toString();
+    }
+
 }

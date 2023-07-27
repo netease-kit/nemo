@@ -198,19 +198,19 @@ public class UserServiceImpl implements UserService {
     public UserDto createNeRoomUser(CreateUserParam createUserParam) {
         String userUuid = createUserParam.getUserUuid();
         String imToken = createUserParam.getImToken();
-        if(StringUtils.isEmpty(imToken)) {
+        if (StringUtils.isEmpty(imToken)) {
             imToken = UUIDUtil.getUUID();
         }
         String userToken = createUserParam.getUserToken();
-        if(StringUtils.isEmpty(userToken)) {
+        if (StringUtils.isEmpty(userToken)) {
             userToken = UUIDUtil.getUUID();
         }
 
         User user = userMapperWrapper.selectByUserUuid(userUuid);
+        boolean exist = false;
         if (user != null) {
             log.info("账号已存在,使用老账号同步");
-            // 不做更新直接返回老账号
-            return UserDto.build(user);
+            exist = true;
         }
 
         user = ObjectMapperUtil.map(createUserParam, User.class);
@@ -227,7 +227,11 @@ public class UserServiceImpl implements UserService {
         neRoomUser.setUpdateOnConflict(true);
         neRoomService.createNeRoomUser(userUuid, neRoomUser);
 
-        userMapperWrapper.insertSelective(user);
+        if (!exist) {
+            userMapperWrapper.insertSelective(user);
+        } else {
+            userMapperWrapper.updateByPrimaryKeySelective(user);
+        }
 
         return UserDto.build(user);
     }
