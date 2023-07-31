@@ -65,8 +65,9 @@
 * 语聊房客户端源码（Android&ios） https://github.com/netease-kit/NEChatroom
 * 服务器源码 https://github.com/netease-kit/nemo
 ## 5.安装说明
- [安装说明——本地启动](./安装说明.md)
- 
+ [安装说明——docker本地启动](./安装说明.md)
+
+ [安装说明——IDEA本地启动](./Idea本地启动说明.md)
 ## 6.Demo体验
 
 * 云信派对安卓下载包二维码 
