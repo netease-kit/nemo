@@ -179,7 +179,7 @@ public class TestUserService implements InitializingBean {
         }
 
         if (StringUtils.isEmpty(initUserParam.getUserUuid())) {
-            user.setUserUuid(UUIDUtil.getRandomString(32));
+            user.setUserUuid(UUIDUtil.randomLowerLetterAndNumber(32));
         } else {
             user.setUserUuid(initUserParam.getUserUuid());
         }

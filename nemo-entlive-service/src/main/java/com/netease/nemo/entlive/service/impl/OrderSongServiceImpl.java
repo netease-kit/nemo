@@ -6,6 +6,7 @@ import com.netease.nemo.dto.UserDto;
 import com.netease.nemo.entlive.dto.*;
 import com.netease.nemo.entlive.dto.OrderSongNotifyEventDto;
 import com.netease.nemo.entlive.enums.LiveEnum;
+import com.netease.nemo.entlive.enums.LiveTypeEnum;
 import com.netease.nemo.entlive.enums.OrderSongStatusEnum;
 import com.netease.nemo.entlive.mapper.OrderSongMapper;
 import com.netease.nemo.entlive.model.po.OrderSong;
@@ -96,6 +97,12 @@ public class OrderSongServiceImpl implements OrderSongService {
         orderSongDto.setRoomArchiveId(roomArchiveId);
         orderSongDto.setRoomUuid(roomUuid);
         OrderSong orderSong = modelMapper.map(orderSongDto, OrderSong.class);
+
+
+        if (LiveTypeEnum.CHAT.getType() == liveRecordDto.getLiveType()
+                && !liveRecordDto.getUserUuid().equals(orderSongDto.getUserUuid())) {
+            throw new BsException(ErrorCode.FORBIDDEN, "非主播不能点歌");
+        }
 
         // 添加点歌到队列
         addOrderSong(orderSong);
