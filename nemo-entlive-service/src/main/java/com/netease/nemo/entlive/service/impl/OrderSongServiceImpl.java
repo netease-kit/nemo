@@ -90,6 +90,10 @@ public class OrderSongServiceImpl implements OrderSongService {
         String userUuid = orderSongDto.getUserUuid();
         String roomUuid = liveRecordDto.getRoomUuid();
 
+        if (LiveTypeEnum.CHAT.getType() == liveRecordDto.getLiveType()
+                && !liveRecordDto.getUserUuid().equals(orderSongDto.getUserUuid())) {
+            throw new BsException(ErrorCode.FORBIDDEN, "非主播不能点歌");
+        }
         // 校验点歌数量及权限
         checkOrderSong(liveRecordId, roomArchiveId, userUuid, orderSongDto.getSongId());
 
@@ -97,12 +101,6 @@ public class OrderSongServiceImpl implements OrderSongService {
         orderSongDto.setRoomArchiveId(roomArchiveId);
         orderSongDto.setRoomUuid(roomUuid);
         OrderSong orderSong = modelMapper.map(orderSongDto, OrderSong.class);
-
-
-        if (LiveTypeEnum.CHAT.getType() == liveRecordDto.getLiveType()
-                && !liveRecordDto.getUserUuid().equals(orderSongDto.getUserUuid())) {
-            throw new BsException(ErrorCode.FORBIDDEN, "非主播不能点歌");
-        }
 
         // 添加点歌到队列
         addOrderSong(orderSong);

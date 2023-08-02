@@ -168,6 +168,11 @@ public class EntLiveServiceImpl implements EntLiveService {
     @Transactional
     public void closeLiveRoom(String operator, Long liveRecordId) {
         LiveRecord liveRecord = liveRecordWrapper.selectByPrimaryKey(liveRecordId);
+
+        if (null == liveRecord || !LiveEnum.isLive(liveRecord.getLive())) {
+            throw new BsException(ErrorCode.ANCHOR_NOT_LIVING);
+        }
+
         if (!operator.equals(liveRecord.getUserUuid())) {
             throw new BsException(ErrorCode.FORBIDDEN, "用户无权限关播");
         }
