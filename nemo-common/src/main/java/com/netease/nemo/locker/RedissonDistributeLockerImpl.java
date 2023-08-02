@@ -66,7 +66,7 @@ public class RedissonDistributeLockerImpl implements LockerService {
         String lockKey = RedisUtil.joinKey(keyParts);
         try {
             // TODO 业务自行配置 尝试获取时间及锁持有时间
-            lock = this.tryLock(lockKey, 10, 10, TimeUnit.SECONDS);
+            lock = this.tryLock(lockKey, 3, 5, TimeUnit.SECONDS);
             long end = System.nanoTime();
 
             if (!lock) {
@@ -91,7 +91,7 @@ public class RedissonDistributeLockerImpl implements LockerService {
         String lockKey = RedisUtil.joinKey(keyParts);
         try {
             // TODO 业务自行配置 尝试获取时间及锁持有时间
-            lock = this.tryLock(lockKey, 10, 10, TimeUnit.SECONDS);
+            lock = this.tryLock(lockKey, 3, 5, TimeUnit.SECONDS);
             long end = System.nanoTime();
 
             if (!lock) {

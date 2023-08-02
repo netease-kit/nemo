@@ -65,20 +65,21 @@
 * 语聊房客户端源码（Android&ios） https://github.com/netease-kit/NEChatroom
 * 服务器源码 https://github.com/netease-kit/nemo
 ## 5.安装说明
- [安装说明——本地启动](./安装说明.md)
- 
+ [安装说明——docker本地启动](./安装说明.md)
+
+ [安装说明——IDEA本地启动](./Idea本地启动说明.md)
+
 ## 6.Demo体验
-
-* 云信派对安卓下载包二维码 
-
-![](./doc/体验包/安卓包.png)
-
-* 云信派对ios下载包二维码
-
-![](./doc/体验包/ios安装包.png)
+官网下载体验Demo：[云信派对解决方案](https://netease.im/all-in-one)
 
 ## 7. 联系我们
-邮箱: 
-caohao02@corp.netease.com, sanghuajun@corp.netease.com, niexiajun@corp.netease.com
+- 如果想要了解该场景的更多信息，请参见：
+  - [1 对 1 娱乐社交场景方案文档](https://doc.yunxin.163.com/1v1-social/docs/jk2OTI0NTM?platform=android)
+  - [语聊房场景方案文档](https://doc.yunxin.163.com/1v1-social/docs/jk2OTI0NTM?platform=android)
+
+- 如果您遇到问题，可以先查阅[知识库](https://faq.yunxin.163.com/kb/main/#/)
+- 如果需要售后技术支持，请[提交工单](https://app.yunxin.163.com/index#/issue/submit)
+- 邮箱:
+  caohao02@corp.netease.com, sanghuajun@corp.netease.com, niexiajun@corp.netease.com
 
 

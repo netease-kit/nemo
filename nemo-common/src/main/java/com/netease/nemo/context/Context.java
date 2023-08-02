@@ -18,6 +18,7 @@ public class Context {
     private String imVersion;
     private String rtcVersion;
     private String roomKitVersion;
+    private String appKey;
     private String userToken;
     private ImmutableMap<String, String> headerMap;
     private String respMsg;
@@ -53,6 +54,10 @@ public class Context {
         this.deviceId = StringUtils.isEmpty(headerMap.get("deviceId".toLowerCase())) ? "unknown" : headerMap.get("deviceId".toLowerCase());
         if (!StringUtils.isEmpty(headerMap.get("token"))) {
             this.userToken = headerMap.get("token");
+        }
+
+        if (!StringUtils.isEmpty(headerMap.get("appkey".toLowerCase()))) {
+            this.appKey = headerMap.get("appkey".toLowerCase());
         }
     }
 }

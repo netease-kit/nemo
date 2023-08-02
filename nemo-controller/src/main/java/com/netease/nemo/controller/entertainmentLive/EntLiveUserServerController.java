@@ -38,6 +38,7 @@ public class EntLiveUserServerController {
      * TODO 注： 仅体验demo阶段使用，实际落地该API需删除
      */
     @PostMapping(value = "/initVoiceRoomUser")
+    @Checksum
     public Object initOneToOne() {
         return testUserService.initVoiceRoomUser();
     }

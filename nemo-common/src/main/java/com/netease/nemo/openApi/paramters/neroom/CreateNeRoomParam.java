@@ -1,6 +1,7 @@
 package com.netease.nemo.openApi.paramters.neroom;
 
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 public class CreateNeRoomParam {
@@ -12,8 +13,19 @@ public class CreateNeRoomParam {
     private ExternalLiveConfig externalLiveConfig;
     private RoomSeatConfig roomSeatConfig;
 
+
     @Data
+    @NoArgsConstructor
     public static class RoomConfig {
+        private ResourceConfig resource;
+
+        public RoomConfig(ResourceConfig resource) {
+            this.resource = resource;
+        }
+    }
+
+    @Data
+    public static class ResourceConfig {
         private Boolean whiteboard;
         private Boolean chatroom;
         private Boolean live;
@@ -22,11 +34,11 @@ public class CreateNeRoomParam {
         private Boolean sip;
         private Boolean seat;
 
-        public static RoomConfig buildEntVoiceRoom() {
-            return new RoomConfig(false, true, true, true, false, false, true);
+        public static ResourceConfig buildEntVoiceRoom() {
+            return new ResourceConfig(false, true, true, true, false, false, true);
         }
 
-        public RoomConfig(Boolean whiteboard, Boolean chatroom, Boolean live, Boolean rtc, Boolean record, Boolean sip,Boolean seat) {
+        public ResourceConfig(Boolean whiteboard, Boolean chatroom, Boolean live, Boolean rtc, Boolean record, Boolean sip, Boolean seat) {
             this.whiteboard = whiteboard;
             this.chatroom = chatroom;
             this.live = live;

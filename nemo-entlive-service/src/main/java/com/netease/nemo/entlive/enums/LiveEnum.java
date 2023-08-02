@@ -7,10 +7,6 @@ public enum LiveEnum {
     LIVE_CLOSE(-1, "直播结束"),
     NOT_START(0, "初始化"),
     LIVE(1, "直播中"),
-    PK_LIVE(2, "PK中"),
-    LIVE_PUNISHMENT(3, "直播惩罚"),
-    LIVE_SEAT(4, "连麦中"),
-    PK_WAITING(5, "pK 邀请中"),
     ;
 
     /**
@@ -60,35 +56,4 @@ public enum LiveEnum {
 
         return LiveEnum.LIVE_CLOSE.getCode() != code && LiveEnum.NOT_START.getCode() != code;
     }
-
-    /**
-     * 判断状态是否PK中
-     *
-     * @param code code
-     * @return true or false
-     */
-    public static Boolean isPKLive(Integer code) {
-        if (null == code) {
-            return false;
-        }
-
-        return LiveEnum.PK_WAITING.getCode() == code
-                || LiveEnum.LIVE_PUNISHMENT.getCode() == code
-                || LiveEnum.PK_LIVE.getCode() == code;
-    }
-
-    /**
-     * 判断状态是否可以PK
-     *
-     * @param code code
-     * @return true or false
-     */
-    public static Boolean canPK(Integer code) {
-        if (null == code) {
-            return false;
-        }
-
-        return LiveEnum.LIVE.getCode() == code;
-    }
-
 }
