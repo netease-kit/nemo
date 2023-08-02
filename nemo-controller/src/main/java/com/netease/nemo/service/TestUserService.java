@@ -4,6 +4,7 @@ import com.google.gson.reflect.TypeToken;
 import com.netease.nemo.code.ErrorCode;
 import com.netease.nemo.context.Context;
 import com.netease.nemo.dto.UserDto;
+import com.netease.nemo.entlive.util.LiveResourceUtil;
 import com.netease.nemo.enums.UserStateEnum;
 import com.netease.nemo.exception.BsException;
 import com.netease.nemo.mapper.UserDeviceMapper;
@@ -171,18 +172,9 @@ public class TestUserService implements InitializingBean {
 
     private  User buildUser(InitUserParam initUserParam) {
         User user = new User();
-
-        if (StringUtils.isEmpty(initUserParam.getUserName())) {
-            user.setUserName(UUIDUtil.getRandomString(8));
-        } else {
-            user.setUserName(initUserParam.getUserName());
-        }
-
-        if (StringUtils.isEmpty(initUserParam.getUserUuid())) {
-            user.setUserUuid(UUIDUtil.randomLowerLetterAndNumber(32));
-        } else {
-            user.setUserUuid(initUserParam.getUserUuid());
-        }
+        user.setUserName(StringUtils.isEmpty(initUserParam.getUserName()) ? LiveResourceUtil.getRandomUserName() : initUserParam.getUserName());
+        user.setUserUuid(StringUtils.isEmpty(initUserParam.getUserUuid()) ? UUIDUtil.randomLowerLetterAndNumber(32) : initUserParam.getUserUuid());
+        user.setIcon(StringUtils.isEmpty(initUserParam.getIcon()) ? LiveResourceUtil.getRandomAvatar() : initUserParam.getIcon());
 
         if (StringUtils.isEmpty(initUserParam.getImToken())) {
             String token = UUIDUtil.getRandomString(24);
