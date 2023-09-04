@@ -8,24 +8,17 @@ import com.netease.nemo.entlive.dto.LiveIntroDto;
 import com.netease.nemo.entlive.enums.LiveEnum;
 import com.netease.nemo.entlive.enums.LiveTypeEnum;
 import com.netease.nemo.entlive.parameter.CreateLiveParam;
-import com.netease.nemo.entlive.parameter.LiveListQueryParam;
 import com.netease.nemo.entlive.parameter.LiveParam;
-import com.netease.nemo.entlive.parameter.LiveRewardParam;
 import com.netease.nemo.entlive.parameter.neroomNotify.JoinRoomEventNotify;
 import com.netease.nemo.entlive.parameter.neroomNotify.RoomMember;
 import com.netease.nemo.enums.NeRoomNotifyEnum;
 import com.netease.nemo.service.NotifyService;
 import com.netease.nemo.util.gson.GsonUtil;
 import lombok.extern.slf4j.Slf4j;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
-import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -34,8 +27,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.RequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-
-import java.util.Arrays;
 
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 
@@ -228,6 +219,7 @@ public class BaseTest {
         headers.add("token", "BEHI6ZAWDX83E9SA07QG0NNG");
         headers.add("user", "ch");
         headers.add("appkey", "2281b35c3a46a4c419406581f04f2b13");
+        headers.add("deviceId", "2281b35c3a46a4c419406581f04f2b13");
         return headers;
     }
 
@@ -236,6 +228,7 @@ public class BaseTest {
         headers.add("token", "6NQGDW4O0F1RPK30VC69QWRK");
         headers.add("user", "ch1");
         headers.add("appkey", "2281b35c3a46a4c419406581f04f2b13");
+        headers.add("deviceId", "2281b35c3a46a4c419406581f04f2b13");
         return headers;
     }
 }
