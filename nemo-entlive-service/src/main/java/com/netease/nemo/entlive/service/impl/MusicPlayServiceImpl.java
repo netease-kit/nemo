@@ -4,16 +4,16 @@ import com.netease.nemo.code.ErrorCode;
 import com.netease.nemo.context.Context;
 import com.netease.nemo.dto.EventDto;
 import com.netease.nemo.dto.UserDto;
+import com.netease.nemo.entlive.delay.DelayTopic;
+import com.netease.nemo.entlive.delay.task.ListenTogetherPlayTask;
 import com.netease.nemo.entlive.dto.BasicUserDto;
 import com.netease.nemo.entlive.dto.LiveRecordDto;
 import com.netease.nemo.entlive.dto.PlayDetailInfoDto;
 import com.netease.nemo.entlive.dto.message.MusicPlayNotifyEventDto;
-import com.netease.nemo.entlive.enums.LiveEnum;
-import com.netease.nemo.entlive.enums.MusicPlayerActionEnum;
-import com.netease.nemo.entlive.enums.MusicPlayerStatusEnum;
-import com.netease.nemo.entlive.enums.OrderSongStatusEnum;
+import com.netease.nemo.entlive.enums.*;
 import com.netease.nemo.entlive.model.po.OrderSong;
 import com.netease.nemo.entlive.parameter.MusicActionParam;
+import com.netease.nemo.entlive.parameter.neroomNotify.RoomMember;
 import com.netease.nemo.entlive.service.LiveRecordService;
 import com.netease.nemo.entlive.service.MusicPlayService;
 import com.netease.nemo.entlive.service.NeRoomMemberService;
@@ -23,15 +23,18 @@ import com.netease.nemo.enums.EventTypeEnum;
 import com.netease.nemo.exception.BsException;
 import com.netease.nemo.openApi.NeRoomService;
 import com.netease.nemo.openApi.paramters.neroom.NeRoomMessageParam;
+import com.netease.nemo.queue.producer.DelayQueueProducer;
 import com.netease.nemo.service.UserService;
 import com.netease.nemo.util.gson.GsonUtil;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.BooleanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
 import java.util.List;
+import java.util.stream.Collectors;
+
+import static com.netease.nemo.entlive.enums.MusicPlayerActionEnum.getEventType;
 
 /**
  * 歌曲播放服务
@@ -45,6 +48,9 @@ public class MusicPlayServiceImpl implements MusicPlayService {
 
     @Resource
     private UserService userService;
+
+    @Resource
+    private DelayQueueProducer delayQueueProducer;
 
     @Resource
     private NeRoomMemberService neRoomMemberService;
@@ -89,22 +95,89 @@ public class MusicPlayServiceImpl implements MusicPlayService {
             throw new BsException(ErrorCode.ORDER_SONG_NOT_EXISTS);
         }
 
-        if (!(orderSong.getUserUuid().equals(userUuid) || liveRecordDto.getUserUuid().equals(userUuid))) {
-            throw new BsException(ErrorCode.FORBIDDEN);
+        if(!liveRecordId.equals(orderSong.getLiveRecordId())){
+            throw new BsException(ErrorCode.ORDER_SONG_NOT_EXISTS);
         }
 
-        // 语聊房歌曲ready时直接播放歌曲
-        handlerChatMusicPlay(liveRecordId, Context.get().getUserUuid(), orderSong);
+        Integer liveType = liveRecordDto.getLiveType();
+        if (LiveTypeEnum.CHAT.getType() == liveType) {
+            if (!(orderSong.getUserUuid().equals(userUuid) || liveRecordDto.getUserUuid().equals(userUuid))) {
+                throw new BsException(ErrorCode.FORBIDDEN);
+            }
+            // 语聊房歌曲ready时直接播放歌曲
+            musicPlay(liveRecordId, Context.get().getUserUuid(), orderSong);
+        } else if (LiveTypeEnum.LISTEN_TOGETHER.getType() == liveType) {
+            // 一起听房歌曲ready时发送消息通知主播
+            handlerListenMusicPlay(liveRecordDto, Context.get().getUserUuid(), orderSong);
+        }
+    }
+
+    private void handlerListenMusicPlay(LiveRecordDto liveRecordDto, String userUuid, OrderSong orderSong) {
+        Long liveRecordId = liveRecordDto.getId();
+        Long orderId = orderSong.getId();
+
+        List<RoomMember> members = neRoomMemberService.getRoomMembers(liveRecordDto.getRoomArchiveId());
+        if (members.size() < 2) {
+            musicPlay(liveRecordId, userUuid, orderSong);
+        } else {
+            // 用户设置歌曲ready
+            musicPlayerRedisWrapper.musicReady(liveRecordId, orderId, userUuid);
+
+            ListenTogetherPlayTask task = ListenTogetherPlayTask.builder().liveRecordId(liveRecordId).orderId(orderSong.getId()).build();
+
+            // 判断是否所有人都已准备
+            boolean allReady = isMusicReady(liveRecordId, orderSong.getId(), members.stream().map(RoomMember::getUserUuid).collect(Collectors.toList()));
+
+            if (!allReady) {
+                // 获取房间歌曲播放信息
+                PlayDetailInfoDto playDetailInfoDto = musicPlayerRedisWrapper.getMusicPlayerInfo(liveRecordId);
+                if (playDetailInfoDto != null && playDetailInfoDto.getOrderId().equals(orderSong.getId())) {
+                    playDetailInfoDto.setMusicStatus(MusicPlayerStatusEnum.READYING.getStatus());
+                } else {
+                    playDetailInfoDto = new PlayDetailInfoDto(orderSong, MusicPlayerStatusEnum.READYING);
+                }
+                musicPlayerRedisWrapper.putMusicPlayerInfo(liveRecordId, playDetailInfoDto);
+
+                // 发送消息观众或者主播歌曲已准备消息到房间
+                MusicPlayNotifyEventDto musicPlayNotifyEventDto = new MusicPlayNotifyEventDto(getOperatorInfoDto(userUuid));
+                musicPlayNotifyEventDto.setPlayMusicInfo(playDetailInfoDto);
+                sendMusicPlayerMessage(musicPlayNotifyEventDto, playDetailInfoDto.getRoomUuid(), EventTypeEnum.ENT_MUSIC_READY.getType());
+
+                // 发送延迟消息，30s后检查歌曲是否已准备，如果未准备则直接播放歌曲
+                delayQueueProducer.send(DelayTopic.LISTEN_TOGETHER_TOPIC, GsonUtil.toJson(task), 30000);
+            } else {
+                // 取消延迟消息
+                delayQueueProducer.cancel(DelayTopic.LISTEN_TOGETHER_TOPIC, GsonUtil.toJson(task));
+                musicPlay(liveRecordId, userUuid, orderSong);
+            }
+        }
+    }
+
+    private boolean isMusicReady(Long liveRecordId, Long orderId, List<String> userUuids) {
+        boolean allMusicReady = false;
+        if (CollectionUtils.isEmpty(userUuids)) {
+            return false;
+        }
+        for (String userUuid : userUuids) {
+            allMusicReady = musicPlayerRedisWrapper.isMusicReady(liveRecordId, orderId, userUuid);
+            if (!allMusicReady) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     @Override
     public void musicAction(String userUuid, MusicActionParam param) {
         Long liveRecordId = param.getLiveRecordId();
         Integer action = param.getAction();
+
         LiveRecordDto liveRecordDto = liveRecordService.getLiveRecord(liveRecordId);
         if (liveRecordDto == null || !LiveEnum.isLive(liveRecordDto.getLive())) {
             throw new BsException(ErrorCode.ANCHOR_NOT_LIVING);
         }
+
         if (!neRoomMemberService.userInNeRoom(liveRecordDto.getRoomArchiveId(), userUuid)) {
             throw new BsException(ErrorCode.USER_NOT_IN_ROOM, "用户未加入房间");
         }
@@ -158,29 +231,24 @@ public class MusicPlayServiceImpl implements MusicPlayService {
         musicPlayerRedisWrapper.deleteMusicReady(liveRecordId, orderId);
     }
 
-
-    private EventTypeEnum getEventType(Integer action, Boolean firstPlay) {
-        if (MusicPlayerStatusEnum.PLAY.getStatus() == action) {
-            if (BooleanUtils.isTrue(firstPlay)) {
-                return EventTypeEnum.ENT_MUSIC_PLAY;
-            } else {
-                return EventTypeEnum.ENT_MUSIC_RESUME_PLAY;
-            }
+    @Override
+    public void cleanPlayerMusicInfo(Long liveRecordId) {
+        PlayDetailInfoDto playDetailInfoDto = musicPlayerRedisWrapper.getMusicPlayerInfo(liveRecordId);
+        if (playDetailInfoDto != null) {
+            Long orderId = playDetailInfoDto.getOrderId();
+            musicPlayerRedisWrapper.deleteMusicReady(liveRecordId, orderId);
+            musicPlayerRedisWrapper.deleteMusicPlayerInfo(liveRecordId);
         }
-        if (MusicPlayerStatusEnum.PAUSE.getStatus() == action) {
-            return EventTypeEnum.ENT_MUSIC_PAUSE;
-        }
-        return null;
     }
 
     /**
-     * 语聊房主播ready处理逻辑: 主播歌曲准备好后 直接开始播放
+     * 开始播放歌曲
      *
      * @param liveRecordId 直播间唯一记录编号
      * @param userUuid     主播账号
      * @param orderSong    点歌信息
      */
-    private void handlerChatMusicPlay(Long liveRecordId, String userUuid, OrderSong orderSong) {
+    private void musicPlay(Long liveRecordId, String userUuid, OrderSong orderSong) {
         MusicPlayNotifyEventDto musicPlayNotifyEventDto = new MusicPlayNotifyEventDto(getOperatorInfoDto(userUuid));
         PlayDetailInfoDto playDetailInfoDto = new PlayDetailInfoDto(orderSong, MusicPlayerStatusEnum.PLAY);
         musicPlayNotifyEventDto.setPlayMusicInfo(playDetailInfoDto);
@@ -223,7 +291,7 @@ public class MusicPlayServiceImpl implements MusicPlayService {
         if (orderSong == null || !OrderSongStatusEnum.effectiveOrderSong(orderSong.getStatus())) {
             throw new BsException(ErrorCode.ORDER_SONG_NOT_EXISTS);
         }
-        if(OrderSongStatusEnum.PLAYING.getCode() == orderSong.getStatus()) {
+        if (OrderSongStatusEnum.PLAYING.getCode() == orderSong.getStatus()) {
             return;
         }
         orderSong.setStatus(OrderSongStatusEnum.PLAYING.getCode());

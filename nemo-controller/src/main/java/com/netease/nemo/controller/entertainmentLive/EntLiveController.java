@@ -8,7 +8,10 @@ import com.netease.nemo.context.Context;
 import com.netease.nemo.entlive.dto.LiveIntroDto;
 import com.netease.nemo.entlive.enums.LiveTypeEnum;
 import com.netease.nemo.entlive.enums.SeatModeEnum;
-import com.netease.nemo.entlive.parameter.*;
+import com.netease.nemo.entlive.parameter.CreateLiveParam;
+import com.netease.nemo.entlive.parameter.LiveListQueryParam;
+import com.netease.nemo.entlive.parameter.LiveParam;
+import com.netease.nemo.entlive.parameter.LiveRewardParam;
 import com.netease.nemo.entlive.service.EntLiveService;
 import com.netease.nemo.entlive.util.LiveResourceUtil;
 import com.netease.nemo.enums.RedisKeyEnum;
@@ -105,7 +108,6 @@ public class EntLiveController {
 
     private void checkCreateLiveParam(CreateLiveParam param) {
         AssertUtil.notNull(param, ErrorCode.BAD_REQUEST, "The Request Body Can Not Null");
-        AssertUtil.notNull(param.getConfigId(), ErrorCode.BAD_REQUEST, "configId Can Not Null");
         if (!LiveTypeEnum.checkType(param.getLiveType())) {
             throw new BsException(ErrorCode.BAD_REQUEST, "liveType enum error");
         }
@@ -124,6 +126,10 @@ public class EntLiveController {
 
         if (param.getSeatCount() != null && param.getSeatCount() > 20) {
             throw new BsException(ErrorCode.SEAT_COUNT_OVER_LIMIT);
+        }
+
+        if (!StringUtils.isEmpty(param.getExt()) && param.getExt().length() > 2048) {
+            throw new BsException(ErrorCode.BAD_REQUEST, "The Ext Length Exceed Limit: 2048");
         }
     }
 }

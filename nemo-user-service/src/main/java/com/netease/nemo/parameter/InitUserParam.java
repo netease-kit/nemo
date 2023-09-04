@@ -2,6 +2,9 @@ package com.netease.nemo.parameter;
 
 import lombok.Data;
 
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Size;
+
 @Data
 public class InitUserParam {
     private String userName;
@@ -9,10 +12,6 @@ public class InitUserParam {
     private Integer sceneType;
     private String userUuid;
     private String imToken;
+    private String userToken;
     private String icon;
-
-
-    // 生成InitUserParam对象的json
-    // {"userName":"test","sceneType":1,"userUuid":"test","imToken":"test","icon":"test"}
-
 }

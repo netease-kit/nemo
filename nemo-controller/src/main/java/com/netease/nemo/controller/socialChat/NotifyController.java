@@ -3,6 +3,7 @@ package com.netease.nemo.controller.socialChat;
 import com.google.gson.JsonObject;
 import com.netease.nemo.annotation.RestResponseBody;
 import com.netease.nemo.config.YunXinConfigProperties;
+import com.netease.nemo.context.Context;
 import com.netease.nemo.service.NotifyService;
 import com.netease.nemo.util.CheckSumBuilder;
 import lombok.extern.slf4j.Slf4j;
@@ -36,6 +37,7 @@ public class NotifyController {
     @PostMapping(value = {"notify"}, produces = "application/json;charset=UTF-8")
     @ResponseBody
     public JsonObject notify(HttpServletRequest request, @RequestBody String requestBody) {
+        String secret = Context.get().getSecret();
         JsonObject result = new JsonObject();
         try {
             if (StringUtils.isEmpty(requestBody)) {
@@ -47,7 +49,7 @@ public class NotifyController {
             String checksum = request.getHeader("CheckSum");
 
             String verifyMD5 = CheckSumBuilder.getMD5(requestBody);
-            String verifyChecksum = CheckSumBuilder.getCheckSum(verifyMD5, curTime, yunXinConfigProperties.getAppSecret());
+            String verifyChecksum = CheckSumBuilder.getCheckSum(verifyMD5, curTime, secret);
             if (verifyChecksum.equals(checksum)) {
                 String type = request.getHeader("type");
                 if ("G2".equals(type)) {

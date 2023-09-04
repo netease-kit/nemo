@@ -1,6 +1,7 @@
 package com.netease.nemo.entlive.service.impl;
 
 import com.google.gson.JsonObject;
+import com.netease.nemo.context.Context;
 import com.netease.nemo.entlive.parameter.neroomNotify.CloseRoomEventNotify;
 import com.netease.nemo.entlive.parameter.neroomNotify.CreateRoomEventNotify;
 import com.netease.nemo.entlive.parameter.neroomNotify.JoinRoomEventNotify;
@@ -31,7 +32,8 @@ public class NeRoomNotifyServiceImpl implements NotifyService {
      * TODO 注：仅为云信派对——语聊房处理逻辑
      */
     public void handleNeRoomMsg(String body) {
-        log.info("handleNeRoomNotifyMsg body: {}", body);
+        String appKey = Context.get().getAppKey();
+        log.info("handleNeRoomNotifyMsg body: {},appKey:{}", body, appKey);
         try {
             JsonObject jsonObject = GsonUtil.parseJsonObject(body);
             String eventType = GsonUtil.getString(jsonObject, "eventType");

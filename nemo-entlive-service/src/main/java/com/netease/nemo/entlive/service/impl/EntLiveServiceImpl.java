@@ -4,12 +4,14 @@ import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.netease.nemo.code.ErrorCode;
+import com.netease.nemo.config.YunXinConfigProperties;
 import com.netease.nemo.context.Context;
 import com.netease.nemo.dto.EventDto;
 import com.netease.nemo.dto.UserDto;
 import com.netease.nemo.entlive.dto.*;
 import com.netease.nemo.entlive.dto.message.RewardContentMessage;
 import com.netease.nemo.entlive.enums.LiveEnum;
+import com.netease.nemo.entlive.enums.LiveTypeEnum;
 import com.netease.nemo.entlive.enums.SeatModeEnum;
 import com.netease.nemo.entlive.enums.SeatStatusEnum;
 import com.netease.nemo.entlive.model.po.LiveRecord;
@@ -35,6 +37,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.i18n.LocaleContextHolder;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -43,6 +46,9 @@ import org.springframework.util.StringUtils;
 import javax.annotation.Resource;
 import java.util.*;
 import java.util.stream.Collectors;
+
+import static com.netease.nemo.entlive.util.LiveResourceUtil.listenDefaultSeatCount;
+import static com.netease.nemo.entlive.util.LiveResourceUtil.voiceDefaultSeatCount;
 
 @Service
 @Slf4j
@@ -63,6 +69,8 @@ public class EntLiveServiceImpl implements EntLiveService {
     @Value("${business.voiceRoomConfigId}")
     private Long voiceRoomConfigId;
 
+    @Value("${business.listenTogetherConfigId}")
+    private Long listenTogetherConfigId;
     @Resource
     private LiveRecordWrapper liveRecordWrapper;
 
@@ -81,6 +89,14 @@ public class EntLiveServiceImpl implements EntLiveService {
     @Resource
     private ModelMapper modelMapper;
 
+    @Resource(name = "nemoRedisTemplate")
+    private RedisTemplate<String, Object> nemoRedisTemplate;
+    @Resource
+    private YunXinConfigProperties yunXinConfigProperties;
+
+    @Resource
+    private MusicPlayService musicPlayService;
+
     @Override
     public LiveDefaultInfoDto getDefaultLiveInfo() {
         Locale locale = LocaleContextHolder.getLocale();
@@ -98,7 +114,6 @@ public class EntLiveServiceImpl implements EntLiveService {
     public LiveIntroDto createLiveRoom(CreateLiveParam param) {
         String host = Context.get().getUserUuid();
         UserDto userDto = userService.getUser(host);
-
         LiveRecord liveRecordExists = liveRecordWrapper.selectByUserUuidAndType(host, param.getLiveType());
         if (liveRecordExists != null) {
             return new LiveIntroDto(BasicUserDto.buildBasicUser(userDto), ObjectMapperUtil.map(liveRecordExists, LiveDto.class));
@@ -106,7 +121,7 @@ public class EntLiveServiceImpl implements EntLiveService {
 
         // TODO 使用分布式ID生成保证ID唯一
         String roomUuid = UUIDUtil.getUUID();
-        if(StringUtils.isEmpty(param.getRoomName())) {
+        if (StringUtils.isEmpty(param.getRoomName())) {
             param.setRoomName(param.getLiveTopic());
         }
 
@@ -135,18 +150,52 @@ public class EntLiveServiceImpl implements EntLiveService {
         CreateNeRoomParam createNeRoomParam = new CreateNeRoomParam();
         createNeRoomParam.setRoomName(param.getRoomName());
         createNeRoomParam.setRoomUuid(roomUuid);
-        createNeRoomParam.setTemplateId(param.getConfigId() == null ? voiceRoomConfigId : param.getConfigId());
+
+        // 判断直播类型是否是一起听,如果是一起听,则使用一起听的配置id,否则使用语音房的配置id
+        Integer seatCount =  param.getSeatCount();
+        createNeRoomParam.setTemplateId(getDefaultTemplateId(param.getLiveType()));
 
         CreateNeRoomParam.RoomSeatConfig roomSeatConfig = new CreateNeRoomParam.RoomSeatConfig();
         roomSeatConfig.setApplyMode(SeatModeEnum.fromCode(param.getSeatApplyMode()) == null ? 0 : param.getSeatApplyMode());
         roomSeatConfig.setInviteMode(SeatModeEnum.fromCode(param.getSeatInviteMode()) == null ? 0 : param.getSeatInviteMode());
-        roomSeatConfig.setSeatCount(SeatModeEnum.fromCode(param.getSeatMode()) == null ? 0 : param.getSeatMode());
-        // 当param.getSeatCount()<=0时 默认9个
-        roomSeatConfig.setSeatCount(param.getSeatCount() <= 0 ? 9 : param.getSeatCount());
+        roomSeatConfig.setSeatCount(seatCount == null || seatCount <= 0 ? getDefaultSeatCount(param.getLiveType()) : seatCount);
         createNeRoomParam.setRoomSeatConfig(roomSeatConfig);
+        if (!StringUtils.isEmpty(param.getExt())) {
+            createNeRoomParam.setExt(param.getExt());
+        }
 
         createNeRoomParam.setRoomConfig(new CreateNeRoomParam.RoomConfig(CreateNeRoomParam.ResourceConfig.buildEntVoiceRoom()));
         return createNeRoomParam;
+    }
+
+    /**
+     * 获取默认麦位数 默认为语聊房的麦位数9个
+     *
+     * @param liveType 直播类型
+     * @return 默认麦位数
+     */
+    private Integer getDefaultSeatCount(Integer liveType) {
+        if (LiveTypeEnum.LISTEN_TOGETHER.getType() == liveType) {
+            return listenDefaultSeatCount;
+        } else if (LiveTypeEnum.CHAT.getType() == liveType) {
+            return voiceDefaultSeatCount;
+        }
+        return voiceDefaultSeatCount;
+    }
+
+    /**
+     * 默认配置id 默认拿语聊房模板id
+     *
+     * @param liveType 直播类型
+     * @return 默认配置id
+     */
+    private Long getDefaultTemplateId(Integer liveType) {
+        if (LiveTypeEnum.LISTEN_TOGETHER.getType() == liveType) {
+            return listenTogetherConfigId;
+        } else if (LiveTypeEnum.CHAT.getType() == liveType) {
+            return voiceRoomConfigId;
+        }
+        return voiceRoomConfigId;
     }
 
     @Override
@@ -168,11 +217,6 @@ public class EntLiveServiceImpl implements EntLiveService {
     @Transactional
     public void closeLiveRoom(String operator, Long liveRecordId) {
         LiveRecord liveRecord = liveRecordWrapper.selectByPrimaryKey(liveRecordId);
-
-        if (null == liveRecord || !LiveEnum.isLive(liveRecord.getLive())) {
-            throw new BsException(ErrorCode.ANCHOR_NOT_LIVING);
-        }
-
         if (!operator.equals(liveRecord.getUserUuid())) {
             throw new BsException(ErrorCode.FORBIDDEN, "用户无权限关播");
         }
@@ -184,7 +228,10 @@ public class EntLiveServiceImpl implements EntLiveService {
         liveRecordService.invalidLiveRecord(liveRecordId);
 
         // 清空点歌数据
-        orderSongService.cleanOrderSongs(liveRecord.getId());
+        orderSongService.cleanOrderSongs(liveRecordId);
+
+        // 清空当前播放歌曲信息
+        musicPlayService.cleanPlayerMusicInfo(liveRecordId);
     }
 
     @Override
@@ -212,7 +259,7 @@ public class EntLiveServiceImpl implements EntLiveService {
             liveIntroDto.setLive(liveDto);
 
             UserDto userDto = userMap.get(liveDto.getUserUuid());
-            if(userDto != null) {
+            if (userDto != null) {
                 liveIntroDto.setAnchor(BasicUserDto.buildBasicUser(userDto));
             }
             return liveIntroDto;
@@ -340,8 +387,8 @@ public class EntLiveServiceImpl implements EntLiveService {
     /**
      * 获取麦位用户总打赏数
      *
-     * @param liveRecordId     直播记录编号
-     * @param neRoomSeats     麦位信息列表
+     * @param liveRecordId 直播记录编号
+     * @param neRoomSeats  麦位信息列表
      */
     private List<SeatUserRewardInfoDto> getSeatUserReward(Long liveRecordId, List<NeRoomSeatDto> neRoomSeats) {
         if (CollectionUtils.isEmpty(neRoomSeats)) {

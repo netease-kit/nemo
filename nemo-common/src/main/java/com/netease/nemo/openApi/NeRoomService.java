@@ -11,6 +11,7 @@ import com.netease.nemo.openApi.dto.response.NeRoomResponse;
 import com.netease.nemo.openApi.paramters.neroom.CreateNeRoomParam;
 import com.netease.nemo.openApi.paramters.neroom.CreateNeRoomUserParam;
 import com.netease.nemo.openApi.paramters.neroom.NeRoomMessageParam;
+import com.netease.nemo.openApi.paramters.neroom.v1.PutRoomParam;
 import com.netease.nemo.util.ObjectMapperUtil;
 import com.netease.nemo.util.gson.GsonUtil;
 import lombok.extern.slf4j.Slf4j;

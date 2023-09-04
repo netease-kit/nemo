@@ -14,17 +14,21 @@ import lombok.Getter;
  */
 @Getter
 public enum ImMsgTypeEnum {
-    TEXT_MESSAGE(0),
-    PIC_MESSAGE(1),
-    AUDIO_MESSAGE(2),
-    VIDEO_MESSAGE(3),
-    LOCATION_MESSAGE(4),
-    FILE_MESSAGE(6),
-    NOTICE_MESSAGE(10),
-    CUSTOM_MESSAGE(100),;
-    private final int type;
+    TEXT_MESSAGE(0,"TEXT"),
+    PIC_MESSAGE(1,"PICTURE"),
+    AUDIO_MESSAGE(2,"AUDIO"),
+    VIDEO_MESSAGE(3,"VIDEO"),
+    LOCATION_MESSAGE(4,"LOCATION"),
+    FILE_MESSAGE(6,"TIPS"),
+    NOTICE_MESSAGE(10,"NOTIFICATION"),
+    CUSTOM_MESSAGE(100,"CUSTOM"),
+    ;
 
-    ImMsgTypeEnum(int type) {
+    private final int type;
+    private final String msgType;
+
+    ImMsgTypeEnum(int type, String msgType) {
         this.type = type;
+        this.msgType = msgType;
     }
 }

@@ -121,5 +121,15 @@ public class ErrorCode {
      * 用户已点该歌曲
      */
     public static final int  SONG_IS_ALREADY_ORDER = 1011;
+
+    /**
+     * 用户需要做实名认证
+     */
+    public static final int NEED_REAL_NAME_AUTHENTICATION = 2001;
+
+    /**
+     * 实名认证不通过
+     */
+    public static final int REAL_NAME_AUTH_FAIL = 2002;
 }
 

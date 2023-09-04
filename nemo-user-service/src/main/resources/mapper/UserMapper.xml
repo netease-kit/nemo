@@ -16,7 +16,7 @@
     <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
   </resultMap>
   <sql id="Base_Column_List">
-    id, mobile, user_uuid, user_token, im_token, user_name, icon, age, sex, state, create_time, 
+    id, mobile, user_uuid, user_token, im_token, user_name, icon, age, sex, state, create_time,
     update_time
   </sql>
   <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="BaseResultMap">
@@ -30,11 +30,11 @@
     where id = #{id,jdbcType=BIGINT}
   </delete>
   <insert id="insert" keyColumn="id" keyProperty="id" parameterType="com.netease.nemo.model.po.User" useGeneratedKeys="true">
-    insert into user (mobile, user_uuid, user_token, 
+    insert into user (mobile, user_uuid, user_token,
       im_token, user_name, icon, 
       age, sex, state, create_time, 
       update_time)
-    values (#{mobile,jdbcType=VARCHAR}, #{userUuid,jdbcType=VARCHAR}, #{userToken,jdbcType=VARCHAR}, 
+    values (#{mobile,jdbcType=VARCHAR}, #{userUuid,jdbcType=VARCHAR}, #{userToken,jdbcType=VARCHAR},
       #{imToken,jdbcType=VARCHAR}, #{userName,jdbcType=VARCHAR}, #{icon,jdbcType=VARCHAR}, 
       #{age,jdbcType=INTEGER}, #{sex,jdbcType=TINYINT}, #{state,jdbcType=TINYINT}, #{createTime,jdbcType=TIMESTAMP}, 
       #{updateTime,jdbcType=TIMESTAMP})
@@ -178,7 +178,7 @@
     select
     <include refid="Base_Column_List" />
     from user
-    where state = 1 and mobile = #{mobile,jdbcType=VARCHAR}
+    where state = 1 and mobile = #{mobile,jdbcType=VARCHAR}  order by create_time desc limit 1
   </select>
 
   <select id="selectByUserUuids" resultMap="BaseResultMap">

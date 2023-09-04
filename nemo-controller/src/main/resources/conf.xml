@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+    <comment>server configuration</comment>
+    <!-- debug -->
+    <entry key="Debug">true</entry>
+    <entry key="VerifyCodeDebugEnabled">true</entry>
+    <entry key="MobileFormatCheckEnabled">true</entry>
+</properties>

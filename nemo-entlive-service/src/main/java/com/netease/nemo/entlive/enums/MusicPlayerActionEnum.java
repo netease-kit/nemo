@@ -1,7 +1,11 @@
 package com.netease.nemo.entlive.enums;
 
+import com.netease.nemo.code.ErrorCode;
+import com.netease.nemo.enums.EventTypeEnum;
+import com.netease.nemo.exception.BsException;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import org.apache.commons.lang3.BooleanUtils;
 
 @Getter
 @AllArgsConstructor
@@ -14,7 +18,7 @@ public enum MusicPlayerActionEnum {
     private final int action;
     private final String desc;
 
-    public static boolean checkSAction(Integer action) {
+    public static boolean checkAction(Integer action) {
         if(null == action) {
             return false;
         }
@@ -34,6 +38,22 @@ public enum MusicPlayerActionEnum {
         return true;
     }
 
+
+    public static EventTypeEnum getEventType(Integer action, Boolean firstPlay) {
+        MusicPlayerActionEnum musicAction = fromAction(action);
+        if (musicAction == null) {
+            throw new BsException(ErrorCode.BAD_REQUEST, "action参数错误");
+        }
+        if (PLAY == musicAction) {
+            if (BooleanUtils.isTrue(firstPlay)) {
+                return EventTypeEnum.ENT_MUSIC_PLAY;
+            } else {
+                return EventTypeEnum.ENT_MUSIC_RESUME_PLAY;
+            }
+        } else {
+            return EventTypeEnum.ENT_MUSIC_PAUSE;
+        }
+    }
     /**
      * 根据状态编码获取枚举
      *

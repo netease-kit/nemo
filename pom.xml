@@ -15,6 +15,7 @@
         <module>nemo-socialchat-service</module>
         <module>nemo-controller</module>
         <module>nemo-entlive-service</module>
+        <module>nemo-redis-delay-queue</module>
     </modules>
 
     <parent>
@@ -60,6 +61,11 @@
             <dependency>
                 <groupId>com.netease</groupId>
                 <artifactId>nemo-entlive-service</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.netease</groupId>
+                <artifactId>nemo-redis-delay-queue</artifactId>
                 <version>${project.version}</version>
             </dependency>
         </dependencies>
@@ -129,7 +135,32 @@
 
     <build>
         <plugins>
+            <plugin>
+                <groupId>org.mybatis.generator</groupId>
+                <artifactId>mybatis-generator-maven-plugin</artifactId>
+                <version>1.3.7</version>
+                <configuration>
+                    <!-- mybatis的代码生成器的配置文件 -->
+                    <configurationFile>src/main/resources/generatorConfig.xml</configurationFile>
+                    <!-- 允许覆盖生成的文件 -->
+                    <overwrite>true</overwrite>
+                </configuration>
+
+                <dependencies>
+                    <!-- 为插件单独配置mysql驱动 -->
+                    <dependency>
+                        <groupId>mysql</groupId>
+                        <artifactId>mysql-connector-java</artifactId>
+                        <version>5.1.48</version>
+                    </dependency>
+
+                    <dependency>
+                        <groupId>com.netease.mybatis</groupId>
+                        <artifactId>mybatis-generator-ext</artifactId>
+                        <version>${mybatis-generator-ext.version}</version>
+                    </dependency>
+                </dependencies>
+            </plugin>
         </plugins>
     </build>
-
 </project>

@@ -20,7 +20,7 @@
     <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
   </resultMap>
   <sql id="Base_Column_List">
-    id, live_record_id, room_archive_id, room_uuid, user_uuid, song_id, song_name, song_cover, 
+    id,live_record_id, room_archive_id, room_uuid, user_uuid, song_id, song_name, song_cover,
     singer, singer_cover, song_time, channel, status, set_top_time, create_time, update_time
   </sql>
   <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="BaseResultMap">
@@ -34,16 +34,17 @@
     where id = #{id,jdbcType=BIGINT}
   </delete>
   <insert id="insert" keyColumn="id" keyProperty="id" parameterType="com.netease.nemo.entlive.model.po.OrderSong" useGeneratedKeys="true">
-    insert into order_song (live_record_id, room_archive_id, room_uuid, 
-      user_uuid, song_id, song_name, 
-      song_cover, singer, singer_cover, 
-      song_time, channel, status, 
+      insert into order_song (live_record_id, room_archive_id, room_uuid,
+      user_uuid, song_id, song_name,
+      song_cover, singer, singer_cover,
+      song_time, channel, status,
       set_top_time, create_time, update_time
       )
-    values (#{liveRecordId,jdbcType=BIGINT}, #{roomArchiveId,jdbcType=VARCHAR}, #{roomUuid,jdbcType=VARCHAR}, 
-      #{userUuid,jdbcType=VARCHAR}, #{songId,jdbcType=VARCHAR}, #{songName,jdbcType=VARCHAR}, 
-      #{songCover,jdbcType=VARCHAR}, #{singer,jdbcType=VARCHAR}, #{singerCover,jdbcType=VARCHAR}, 
-      #{songTime,jdbcType=BIGINT}, #{channel,jdbcType=TINYINT}, #{status,jdbcType=TINYINT}, 
+      values (#{liveRecordId,jdbcType=BIGINT}, #{roomArchiveId,jdbcType=VARCHAR},
+      #{roomUuid,jdbcType=VARCHAR},
+      #{userUuid,jdbcType=VARCHAR}, #{songId,jdbcType=VARCHAR}, #{songName,jdbcType=VARCHAR},
+      #{songCover,jdbcType=VARCHAR}, #{singer,jdbcType=VARCHAR}, #{singerCover,jdbcType=VARCHAR},
+      #{songTime,jdbcType=BIGINT}, #{channel,jdbcType=TINYINT}, #{status,jdbcType=TINYINT},
       #{setTopTime,jdbcType=TINYINT}, #{createTime,jdbcType=TIMESTAMP}, #{updateTime,jdbcType=TIMESTAMP}
       )
   </insert>
@@ -196,8 +197,8 @@
     where id = #{id,jdbcType=BIGINT}
   </update>
   <update id="updateByPrimaryKey" parameterType="com.netease.nemo.entlive.model.po.OrderSong">
-    update order_song
-    set live_record_id = #{liveRecordId,jdbcType=BIGINT},
+      update order_song
+      set live_record_id = #{liveRecordId,jdbcType=BIGINT},
       room_archive_id = #{roomArchiveId,jdbcType=VARCHAR},
       room_uuid = #{roomUuid,jdbcType=VARCHAR},
       user_uuid = #{userUuid,jdbcType=VARCHAR},
@@ -212,7 +213,7 @@
       set_top_time = #{setTopTime,jdbcType=BIGINT},
       create_time = #{createTime,jdbcType=TIMESTAMP},
       update_time = #{updateTime,jdbcType=TIMESTAMP}
-    where id = #{id,jdbcType=BIGINT}
+      where id = #{id,jdbcType=BIGINT}
   </update>
 
   <select id="selectByLiveRecordId" resultMap="BaseResultMap">

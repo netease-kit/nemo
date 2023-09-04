@@ -3,6 +3,7 @@ package com.netease.nemo.controller.socialChat;
 import com.netease.nemo.annotation.RestResponseBody;
 import com.netease.nemo.annotation.TokenAuth;
 import com.netease.nemo.context.Context;
+import com.netease.nemo.openApi.NimService;
 import com.netease.nemo.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.PostMapping;

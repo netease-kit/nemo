@@ -3,12 +3,14 @@ package com.netease.nemo.entlive.service.impl;
 import com.netease.nemo.code.ErrorCode;
 import com.netease.nemo.dto.EventDto;
 import com.netease.nemo.dto.UserDto;
-import com.netease.nemo.entlive.dto.*;
-import com.netease.nemo.entlive.dto.OrderSongNotifyEventDto;
+import com.netease.nemo.entlive.dto.BasicUserDto;
+import com.netease.nemo.entlive.dto.LiveRecordDto;
+import com.netease.nemo.entlive.dto.OrderSongDto;
+import com.netease.nemo.entlive.dto.OrderSongResultDto;
+import com.netease.nemo.entlive.dto.message.OrderSongNotifyEventDto;
 import com.netease.nemo.entlive.enums.LiveEnum;
 import com.netease.nemo.entlive.enums.LiveTypeEnum;
 import com.netease.nemo.entlive.enums.OrderSongStatusEnum;
-import com.netease.nemo.entlive.mapper.OrderSongMapper;
 import com.netease.nemo.entlive.model.po.OrderSong;
 import com.netease.nemo.entlive.service.LiveRecordService;
 import com.netease.nemo.entlive.service.MusicPlayService;
@@ -27,7 +29,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
-import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
 import java.util.List;
@@ -94,6 +95,7 @@ public class OrderSongServiceImpl implements OrderSongService {
                 && !liveRecordDto.getUserUuid().equals(orderSongDto.getUserUuid())) {
             throw new BsException(ErrorCode.FORBIDDEN, "非主播不能点歌");
         }
+
         // 校验点歌数量及权限
         checkOrderSong(liveRecordId, roomArchiveId, userUuid, orderSongDto.getSongId());
 
@@ -129,18 +131,12 @@ public class OrderSongServiceImpl implements OrderSongService {
         }
 
         List<OrderSong> orderSongs = orderSongMapperWrapper.selectByLiveRecordIdAndUserId(liveRecordId, userUuid);
-        if(!CollectionUtils.isEmpty(orderSongs)) {
+        if (!CollectionUtils.isEmpty(orderSongs)) {
             boolean isAlreadyOrder = orderSongs.stream().anyMatch(o -> (o.getSongId().equals(songId) && OrderSongStatusEnum.effectiveOrderSong(o.getStatus())));
-            if(isAlreadyOrder) {
+            if (isAlreadyOrder) {
                 throw new BsException(ErrorCode.SONG_IS_ALREADY_ORDER, "The song " + songId + " is already order");
             }
         }
-
-
-//        int userOrderSongCount = orderSongMapperWrapper.selectUserOrderSongCount(liveRecordId, userUuid);
-//        if (userOrderSongCount >= userOrderSongLimit) {
-//            throw new BsException(ErrorCode.USER_ORDER_SONG_EXCEED_LIMIT);
-//        }
 
         int roomOrderSongCount = orderSongMapperWrapper.selectOrderSongCount(liveRecordId);
         if (roomOrderSongCount >= roomOrderSongLimit) {
@@ -199,14 +195,17 @@ public class OrderSongServiceImpl implements OrderSongService {
         String roomUuid = liveRecordDto.getRoomUuid();
         String userUuid = orderSong.getUserUuid();
 
-        if (!operator.equals(userUuid) && !operator.equals(liveRecordDto.getUserUuid())) {
-            throw new BsException(ErrorCode.FORBIDDEN, "无权限");
+        if (LiveTypeEnum.CHAT.getType() == liveRecordDto.getLiveType()) {
+            if (!operator.equals(userUuid) && !operator.equals(liveRecordDto.getUserUuid())) {
+                throw new BsException(ErrorCode.FORBIDDEN, "无权限");
+            }
         }
+
         if (!neRoomMemberService.userInNeRoom(orderSong.getRoomArchiveId(), operator)) {
             throw new BsException(ErrorCode.USER_NOT_IN_ROOM, "用户未加入房间");
         }
 
-        if(OrderSongStatusEnum.CANCEL.getCode() == orderSong.getStatus()) {
+        if (OrderSongStatusEnum.CANCEL.getCode() == orderSong.getStatus()) {
             throw new BsException(ErrorCode.ORDER_SONG_HAS_CANCELLED, "The Song Has Been Cancelled");
         }
 
@@ -214,7 +213,6 @@ public class OrderSongServiceImpl implements OrderSongService {
 
         // 设置删除状态
         orderSong.setStatus(OrderSongStatusEnum.CANCEL.getCode());
-        orderSongMapperWrapper.updateByPrimaryKeySelective(orderSong);
 
         // 返回结果
         OrderSongResultDto orderSongResultDto = OrderSongResultDto.build(orderSong, userService.getUser(userUuid));
@@ -227,10 +225,10 @@ public class OrderSongServiceImpl implements OrderSongService {
                 .build();
 
         OrderSong nextOrderSong = getNextOrderId(liveRecordId, orderId);
-        if(nextOrderSong != null && !nextOrderSong.getId().equals(orderId)) {
+        if (nextOrderSong != null && !nextOrderSong.getId().equals(orderId)) {
             orderSongNotify.setNextOrderSong(OrderSongResultDto.build(nextOrderSong, userService.getUser(nextOrderSong.getUserUuid())));
         }
-
+        orderSongMapperWrapper.updateByPrimaryKeySelective(orderSong);
         musicPlayService.cleanPlayerMusicInfo(liveRecordId, orderId);
 
         // 发送点歌事件
@@ -248,13 +246,16 @@ public class OrderSongServiceImpl implements OrderSongService {
         String roomUuid = liveRecordDto.getRoomUuid();
         String userUuid = orderSong.getUserUuid();
 
-        if (!operator.equals(userUuid) && !operator.equals(liveRecordDto.getUserUuid())) {
-            throw new BsException(ErrorCode.FORBIDDEN, "无权限");
+        if (LiveTypeEnum.CHAT.getType() == liveRecordDto.getLiveType()) {
+            if (!operator.equals(userUuid) && !operator.equals(liveRecordDto.getUserUuid())) {
+                throw new BsException(ErrorCode.FORBIDDEN, "无权限");
+            }
         }
+
         if (!neRoomMemberService.userInNeRoom(orderSong.getRoomArchiveId(), operator)) {
             throw new BsException(ErrorCode.USER_NOT_IN_ROOM, "用户未加入房间");
         }
-        if(OrderSongStatusEnum.CANCEL.getCode() == orderSong.getStatus()) {
+        if (OrderSongStatusEnum.CANCEL.getCode() == orderSong.getStatus()) {
             throw new BsException(ErrorCode.ORDER_SONG_HAS_CANCELLED, "The Song Has Been Cancelled");
         }
 
@@ -267,7 +268,7 @@ public class OrderSongServiceImpl implements OrderSongService {
 
         UserDto operatorUser = userService.getUser(operator);
         OrderSongResultDto nextOrderSongResult = null;
-        if(nextOrderSong != null) {
+        if (nextOrderSong != null) {
             nextOrderSongResult = OrderSongResultDto.build(nextOrderSong, userService.getUser(nextOrderSong.getUserUuid()));
             log.info("the nextOrderSong is:{}", GsonUtil.toJson(nextOrderSongResult));
         }
@@ -322,12 +323,11 @@ public class OrderSongServiceImpl implements OrderSongService {
     }
 
 
-
     /**
      * 点歌相关消息通知
      *
-     * @param roomUuid 房间编号
-     * @param eventType 点歌事件
+     * @param roomUuid                房间编号
+     * @param eventType               点歌事件
      * @param orderSongNotifyEventDto 点歌信息
      */
     private void sendNotifyMsg(String roomUuid, Integer eventType, OrderSongNotifyEventDto orderSongNotifyEventDto) {
@@ -363,7 +363,7 @@ public class OrderSongServiceImpl implements OrderSongService {
      */
     private OrderSong getNextOrderId(Long liveRecordId, Long orderId) {
         List<OrderSong> orderSongs = orderSongMapperWrapper.selectByLiveRecordId(liveRecordId);
-        if(CollectionUtils.isEmpty(orderSongs)) {
+        if (CollectionUtils.isEmpty(orderSongs)) {
             return null;
         }
 

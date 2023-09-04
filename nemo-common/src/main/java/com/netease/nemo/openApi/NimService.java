@@ -34,7 +34,7 @@ public class NimService {
     @Resource
     private YunXinServer yunXinServer;
 
-    @Value(value="business.systemAccid")
+    @Value(value = "business.systemAccid")
     private String systemAccid;
 
     @Resource
@@ -137,7 +137,7 @@ public class NimService {
         if (ImMsgTypeEnum.TEXT_MESSAGE.getType() == type) {
             params.put("body", GsonUtil.toJson(new ImMsgDto(body)));
         } else {
-            params.put("body",GsonUtil.toJson(body));
+            params.put("body", GsonUtil.toJson(body));
         }
 
         ImResponse result = yunXinServer.requestForPostEntityNim(url, HttpMethod.POST, params, null, ImResponse.class);

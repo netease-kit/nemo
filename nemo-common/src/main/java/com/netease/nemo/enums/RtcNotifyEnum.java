@@ -11,7 +11,7 @@ public enum RtcNotifyEnum {
     ROLE_CHANGE_TO_HOST(10, "用户角色变更为主播"),
     EVENT_TYPE_WB_RECORD_FILE(905, "白板录制抄送"),
     EVENT_TYPE_ROOM_SECURITY_AUDIT(400, "房间安全通审核抄送"),
-    EVENT_TYPE_RECORD_ANTIS(401, "云端录制安全通审核抄送")
+    EVENT_TYPE_RECORD_ANTIS(401, "云端录制安全通审核抄送"),
     ;
 
     /**

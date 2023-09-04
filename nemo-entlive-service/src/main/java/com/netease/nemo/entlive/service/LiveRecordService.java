@@ -73,6 +73,7 @@ public interface LiveRecordService {
 
     /**
      * 系统回收未开始的直播
+     *
      * @param liveRecordId 直播记录编号
      */
     void systemRecycleNotLiveRecord(Long liveRecordId);
@@ -94,7 +95,7 @@ public interface LiveRecordService {
     int invalidLiveRecord(Long liveRecordId);
 
     /**
-     * 查询
+     * 根据直播类型查询直播记录
      *
      * @param liveType        房间类型
      * @param excludeUserUuid 过滤账号

@@ -7,6 +7,7 @@
     <property name="pattern.layout" value="%d{yyyy-MM-dd HH:mm:ss.SSS} %-5p [%t] [%c{1} %L] - %X{traceId} %m%n" />
 
     <logger name="com.netease" level="DEBUG"/>
+    <logger name="org.mybatis" level="DEBUG"/>
 
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <filter class="ch.qos.logback.classic.filter.ThresholdFilter">

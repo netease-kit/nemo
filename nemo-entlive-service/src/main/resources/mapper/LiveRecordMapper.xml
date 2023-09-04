@@ -16,7 +16,7 @@
     <result column="live_type" jdbcType="TINYINT" property="liveType" />
   </resultMap>
   <sql id="Base_Column_List">
-    id, room_archive_id, room_uuid, room_name, user_uuid, live_topic, cover, create_time, 
+    id, room_archive_id, room_uuid, room_name, user_uuid, live_topic, cover, create_time,
     update_time, status, live, live_type
   </sql>
   <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="BaseResultMap">
@@ -30,11 +30,11 @@
     where id = #{id,jdbcType=BIGINT}
   </delete>
   <insert id="insert" keyColumn="id" keyProperty="id" parameterType="com.netease.nemo.entlive.model.po.LiveRecord" useGeneratedKeys="true">
-    insert into live_record (room_archive_id, room_uuid, room_name, 
+    insert into live_record (room_archive_id, room_uuid, room_name,
       user_uuid, live_topic, cover, 
       create_time, update_time, status, 
       live, live_type)
-    values (#{roomArchiveId,jdbcType=VARCHAR}, #{roomUuid,jdbcType=VARCHAR}, #{roomName,jdbcType=VARCHAR}, 
+    values (#{roomArchiveId,jdbcType=VARCHAR}, #{roomUuid,jdbcType=VARCHAR}, #{roomName,jdbcType=VARCHAR},
       #{userUuid,jdbcType=VARCHAR}, #{liveTopic,jdbcType=VARCHAR}, #{cover,jdbcType=VARCHAR}, 
       #{createTime,jdbcType=TIMESTAMP}, #{updateTime,jdbcType=TIMESTAMP}, #{status,jdbcType=TINYINT}, 
       #{live,jdbcType=TINYINT}, #{liveType,jdbcType=TINYINT})

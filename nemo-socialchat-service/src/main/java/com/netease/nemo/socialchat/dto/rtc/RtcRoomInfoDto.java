@@ -9,4 +9,5 @@ public class RtcRoomInfoDto {
     private Long createtime;
     private Long timestamp;
     private Integer status;
+    private String appKey;
 }

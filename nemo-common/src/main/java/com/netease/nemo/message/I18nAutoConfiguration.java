@@ -26,7 +26,7 @@ public class I18nAutoConfiguration {
 
     @Bean
     public LocaleResolver localeResolver() {
-        CookieLocaleResolver cookieLocaleResolver = new I18nAutoConfiguration.I18nCookieLocaleResolver();
+        CookieLocaleResolver cookieLocaleResolver = new I18nCookieLocaleResolver();
         cookieLocaleResolver.setCookieName("locale");
         cookieLocaleResolver.setDefaultLocale(Locale.CHINA);
         return cookieLocaleResolver;

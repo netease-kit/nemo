@@ -7,7 +7,6 @@ import com.netease.nemo.config.YunXinConfigProperties;
 import com.netease.nemo.context.Context;
 import com.netease.nemo.dto.UserDto;
 import com.netease.nemo.exception.BsException;
-import com.netease.nemo.model.po.User;
 import com.netease.nemo.service.UserService;
 import com.netease.nemo.util.CheckSumBuilder;
 import lombok.extern.slf4j.Slf4j;
@@ -38,12 +37,12 @@ public class AuthInterceptor implements HandlerInterceptor {
             return true;
         }
 
-        if (request.getRequestURI().startsWith("/health")) {
+        if (request.getRequestURI().startsWith("/nemo/health")) {
             return true;
         }
 
         if (((HandlerMethod) handler).getMethodAnnotation(Checksum.class) != null) {
-            log.debug("执行Checksum鉴权, method: {}", ((HandlerMethod) handler).getMethod().getName());
+            log.debug("执行Checksum鉴权, method: {}", ((HandlerMethod) handler).getBeanType().getName());
             checkCheckSum(request);
             return true;
         }
@@ -66,7 +65,7 @@ public class AuthInterceptor implements HandlerInterceptor {
             throw new BsException(ErrorCode.UNAUTHORIZED, "Missing header parameter,Required parameters:CurTime,CheckSum,Nonce");
         }
 
-        String checksumCal = CheckSumBuilder.getCheckSum(nonce, curTime, yunXinConfigProperties.getAppSecret(), md5 == null ? "" : md5);
+        String checksumCal = CheckSumBuilder.getCheckSum(nonce, curTime, Context.get().getSecret(), md5 == null ? "" : md5);
 
         if (!checksumCal.equalsIgnoreCase(checksum)) {
             throw new BsException(ErrorCode.UNAUTHORIZED, "Bad checksum:" + checksum);

@@ -78,6 +78,12 @@ public class ResultView implements View {
     public void render(Map<String, ?> map, HttpServletRequest request, HttpServletResponse response) throws Exception {
         String costTime = (System.currentTimeMillis() - Context.get().getStartTime()) + "ms";
 
+        if(request.getRequestURI().startsWith("/nemo/openAi/arsFile")) {
+            response.setContentType(MediaType.TEXT_PLAIN_VALUE);
+            response.setContentLength(((String) data).length());
+            response.getWriter().write((String) data);
+        }
+
         LinkedHashMap<String, Object> returnMap = new LinkedHashMap<>();
         if (code == DEFAULT_OK) {
             returnMap.put("code", code);
