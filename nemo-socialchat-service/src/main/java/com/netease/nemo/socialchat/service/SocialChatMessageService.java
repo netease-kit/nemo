@@ -1,15 +1,14 @@
 package com.netease.nemo.socialchat.service;
 
 import com.google.gson.JsonObject;
+import com.netease.nemo.dto.EventDto;
 import com.netease.nemo.dto.UserDto;
 import com.netease.nemo.enums.EventTypeEnum;
-import com.netease.nemo.mapper.GiftMapper;
 import com.netease.nemo.model.po.UserReward;
 import com.netease.nemo.openApi.NimService;
 import com.netease.nemo.openApi.dto.antispam.RtcAntispamDto;
 import com.netease.nemo.openApi.enums.ImOpeEnum;
 import com.netease.nemo.service.UserService;
-import com.netease.nemo.dto.EventDto;
 import com.netease.nemo.socialchat.dto.message.AntisMessage;
 import com.netease.nemo.socialchat.dto.message.RewardMessage;
 import com.netease.nemo.socialchat.dto.message.UserUnBlockMessage;
@@ -58,19 +57,19 @@ public class SocialChatMessageService {
      *
      * @param rtcAntispamDto rtcAntispamDto
      */
-    public void notifyAntispamMessage(RtcAntispamDto rtcAntispamDto) {
+    public void notifyAntispamMessage(String appKey, RtcAntispamDto rtcAntispamDto) {
         AntisMessage antisMessage = AntisMessage.build(rtcAntispamDto);
         if (antisMessage == null) {
             log.info("antisMessage is null.");
             return;
         }
         Long channelId = rtcAntispamDto.getChannelId();
-        RtcRoomInfoDto rtcRoomInfoDto = oneToOneChatService.getRtcRoomInfoDtoByChannelId(channelId);
+        RtcRoomInfoDto rtcRoomInfoDto = oneToOneChatService.getRtcRoomInfoDtoByChannelId(appKey, channelId);
         if (null == rtcRoomInfoDto || rtcRoomInfoDto.getStatus() == RtcStatusEnum.END.getStatus()) {
             log.info("rtcRoomInfoDto is null or status is End, channelId:{}", channelId);
             return;
         }
-        List<RtcRoomUserInfoDto> roomUsers = oneToOneChatService.getRtcRoomUsersByChannelId(channelId);
+        List<RtcRoomUserInfoDto> roomUsers = oneToOneChatService.getRtcRoomUsersByChannelId(appKey, channelId);
         if (!CollectionUtils.isEmpty(roomUsers)) {
             List<String> toAccIds = roomUsers.stream().filter(o -> !StringUtils.isEmpty(o.getUserUuid())).map(RtcRoomUserInfoDto::getUserUuid).collect(Collectors.toList());
             nimService.sendBatchAttachMsg(systemAccid, toAccIds, new EventDto(antisMessage, EventTypeEnum.MESSAGE_CONTENT_MODERATION.getType()));
@@ -81,20 +80,20 @@ public class SocialChatMessageService {
      * 发送解禁违规用户消息
      * @param rtcRoomUserDto rtc用户信息
      */
-    public void notifyUserUnblockedMessage(RtcRoomUserInfoDto rtcRoomUserDto) {
+    public void notifyUserUnblockedMessage(String appKey, RtcRoomUserInfoDto rtcRoomUserDto) {
         if (rtcRoomUserDto == null) {
             log.info("rtcRoomUserInfoDto is null.");
             return;
         }
         Long channelId = rtcRoomUserDto.getChannelId();
-        RtcRoomInfoDto rtcRoomInfoDto = oneToOneChatService.getRtcRoomInfoDtoByChannelId(channelId);
+        RtcRoomInfoDto rtcRoomInfoDto = oneToOneChatService.getRtcRoomInfoDtoByChannelId(appKey, channelId);
         if (null == rtcRoomInfoDto || rtcRoomInfoDto.getStatus() == RtcStatusEnum.END.getStatus()) {
             log.info("rtcRoomInfoDto is null or status is End, channelId:{}", channelId);
             return;
         }
         UserUnBlockMessage userUnBlockMessage = new UserUnBlockMessage(rtcRoomUserDto.getChannelId(), rtcRoomUserDto.getChannelName(), rtcRoomUserDto.getUid());
 
-        List<RtcRoomUserInfoDto> roomUsers = oneToOneChatService.getRtcRoomUsersByChannelId(channelId);
+        List<RtcRoomUserInfoDto> roomUsers = oneToOneChatService.getRtcRoomUsersByChannelId(appKey, channelId);
         if (!CollectionUtils.isEmpty(roomUsers)) {
             List<String> toAccIds = roomUsers.stream().filter(o -> !StringUtils.isEmpty(o.getUserUuid())).map(RtcRoomUserInfoDto::getUserUuid).collect(Collectors.toList());
             if (!CollectionUtils.isEmpty(toAccIds)) {

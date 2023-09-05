@@ -14,4 +14,5 @@ public class RtcRoomUserNotifyParam {
     private Integer platform;
     private Integer userRole;
     private Integer status;
+    private String appKey;
 }

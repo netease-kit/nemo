@@ -27,14 +27,14 @@ public class UserRewardMapperWrapper {
     private UserRewardMapper userRewardMapper;
 
     @Caching(evict = {
-            @CacheEvict(key = "'id_'.concat(#record.id)"),
+            @CacheEvict(key = "'id_'.concat(#record.id)")
     })
     public int insert(UserReward record) {
         return userRewardMapper.insert(record);
     }
 
     @Caching(evict = {
-            @CacheEvict(key = "'id_'.concat(#record.id)"),
+            @CacheEvict(key = "'id_'.concat(#record.id)")
     })
     public int insertSelective(UserReward record) {
         return userRewardMapper.insertSelective(record);
@@ -46,14 +46,14 @@ public class UserRewardMapperWrapper {
     }
 
     @Caching(evict = {
-            @CacheEvict(key = "'id_'.concat(#record.id)"),
+            @CacheEvict(key = "'id_'.concat(#record.id)")
     })
     public int updateByPrimaryKeySelective(UserReward record){
         return userRewardMapper.updateByPrimaryKeySelective(record);
     }
 
     @Caching(evict = {
-            @CacheEvict(key = "'id_'.concat(#record.id)"),
+            @CacheEvict(key = "'id_'.concat(#record.id)")
     })
     public int updateByPrimaryKey(UserReward record) {
         return userRewardMapper.updateByPrimaryKey(record);

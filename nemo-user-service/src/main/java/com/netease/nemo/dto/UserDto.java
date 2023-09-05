@@ -16,6 +16,13 @@ public class UserDto {
     private String imToken;
     private Long rtcUid;
 
+    private String audioUrl;
+    private String videoUrl;
+    private int callType;
+    /**
+     * 是否进行了实名认证，true=已做 false=没有
+     */
+    private Boolean realNameAuth;
     public static UserDto build(User user, UserDevice userDevice) {
         UserDto userDto = ObjectMapperUtil.map(user, UserDto.class);
         userDto.setRtcUid(userDevice.getId());

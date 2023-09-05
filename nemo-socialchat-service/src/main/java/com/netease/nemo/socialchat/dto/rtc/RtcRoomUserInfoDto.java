@@ -15,4 +15,5 @@ public class RtcRoomUserInfoDto {
     private String userName;
     private String icon;
     private Integer status;
+    private String appKey;
 }

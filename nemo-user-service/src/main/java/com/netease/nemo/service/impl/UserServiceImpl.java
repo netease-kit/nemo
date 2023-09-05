@@ -1,6 +1,7 @@
 package com.netease.nemo.service.impl;
 
 import com.netease.nemo.code.ErrorCode;
+import com.netease.nemo.context.Context;
 import com.netease.nemo.dto.UserDto;
 import com.netease.nemo.enums.UserStateEnum;
 import com.netease.nemo.exception.BsException;
@@ -196,21 +197,22 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public UserDto createNeRoomUser(CreateUserParam createUserParam) {
+        String secret = Context.get().getSecret();
         String userUuid = createUserParam.getUserUuid();
         String imToken = createUserParam.getImToken();
-        if (StringUtils.isEmpty(imToken)) {
+        if(StringUtils.isEmpty(imToken)) {
             imToken = UUIDUtil.getUUID();
         }
         String userToken = createUserParam.getUserToken();
-        if (StringUtils.isEmpty(userToken)) {
+        if(StringUtils.isEmpty(userToken)) {
             userToken = UUIDUtil.getUUID();
         }
 
         User user = userMapperWrapper.selectByUserUuid(userUuid);
-        boolean exist = false;
         if (user != null) {
             log.info("账号已存在,使用老账号同步");
-            exist = true;
+            // 不做更新直接返回老账号
+            return UserDto.build(user);
         }
 
         user = ObjectMapperUtil.map(createUserParam, User.class);
@@ -227,11 +229,7 @@ public class UserServiceImpl implements UserService {
         neRoomUser.setUpdateOnConflict(true);
         neRoomService.createNeRoomUser(userUuid, neRoomUser);
 
-        if (!exist) {
-            userMapperWrapper.insertSelective(user);
-        } else {
-            userMapperWrapper.updateByPrimaryKeySelective(user);
-        }
+        userMapperWrapper.insertSelective(user);
 
         return UserDto.build(user);
     }

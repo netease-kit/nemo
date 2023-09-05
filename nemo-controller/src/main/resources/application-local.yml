@@ -41,6 +41,8 @@ business:
   systemAccid: nimsystembot_1  #服务端系统Nim账号
   1v1RtcRoomLiveTime: 10 # 单位（分钟） 1v1RTC房间存活时间，demo默认10分钟回收房间
   voiceRoomConfigId: 569 # 语聊房模板
+  listenTogetherConfigId: 570 # 一起听歌模板
+  ktvConfigId: 72 # KTV模板
 
 server:
   port: 9981

@@ -22,7 +22,7 @@
 
 
   <sql id="Base_Column_List">
-    id, live_record_id, room_archive_id, room_uuid, user_uuid, gift_id, cloud_coin, gift_count, 
+    id, live_record_id, room_archive_id, room_uuid, user_uuid, gift_id, cloud_coin, gift_count,
     target, create_time, update_time
   </sql>
   <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="BaseResultMap">
@@ -36,11 +36,11 @@
     where id = #{id,jdbcType=BIGINT}
   </delete>
   <insert id="insert" keyColumn="id" keyProperty="id" parameterType="com.netease.nemo.entlive.model.po.LiveReward" useGeneratedKeys="true">
-    insert into live_reward (live_record_id, room_archive_id, room_uuid, 
+    insert into live_reward (live_record_id, room_archive_id, room_uuid,
       user_uuid, gift_id, cloud_coin, 
       gift_count, target, create_time, 
       update_time)
-    values (#{liveRecordId,jdbcType=BIGINT}, #{roomArchiveId,jdbcType=VARCHAR}, #{roomUuid,jdbcType=VARCHAR}, 
+    values (#{liveRecordId,jdbcType=BIGINT}, #{roomArchiveId,jdbcType=VARCHAR}, #{roomUuid,jdbcType=VARCHAR},
       #{userUuid,jdbcType=VARCHAR}, #{giftId,jdbcType=BIGINT}, #{cloudCoin,jdbcType=BIGINT}, 
       #{giftCount,jdbcType=INTEGER}, #{target,jdbcType=VARCHAR}, #{createTime,jdbcType=TIMESTAMP}, 
       #{updateTime,jdbcType=TIMESTAMP})
@@ -184,7 +184,7 @@
     VALUES
     <foreach collection="pojos" item="pojo" index="index" separator=",">
       (
-      #{pojo.liveRecordId}, #{pojo.roomArchiveId,jdbcType=VARCHAR}, #{pojo.roomUuid}, #{pojo.userUuid}, #{pojo.giftId}, #{pojo.cloudCoin}, #{pojo.target}, #{pojo.giftCount}
+    #{pojo.liveRecordId}, #{pojo.roomArchiveId,jdbcType=VARCHAR}, #{pojo.roomUuid}, #{pojo.userUuid}, #{pojo.giftId}, #{pojo.cloudCoin}, #{pojo.target}, #{pojo.giftCount}
       )
     </foreach>
   </insert>

@@ -18,12 +18,7 @@ public class CreateLiveParam {
     /**
      * 直播背景
      */
-    private String  cover;
-
-    /**
-     * NeRoom 模板ID
-     */
-    private Long configId;
+    private String cover;
 
     /**
      * 麦位的数量，seatCount>0则初始化麦位，最多20个麦位，传超过20的值会报错
@@ -32,7 +27,7 @@ public class CreateLiveParam {
 
     /**
      * 模麦位模式，0：自由模式，1：管理员控制模式，默认自由模式
-     * **/
+     **/
     private Integer seatMode;
 
     /**
@@ -52,8 +47,18 @@ public class CreateLiveParam {
 
     /**
      * 房间场景
-     * 	COMMUNICATION（0）：通话场景。
-     * 	LIVE_BROADCASTING（1）：直播场景。
+     * COMMUNICATION（0）：通话场景。
+     * LIVE_BROADCASTING（1）：直播场景。
      */
     private Integer roomProfile;
+
+    /**
+     * 房间时长
+     */
+    private Integer liveSeconds;
+
+    /**
+     * 扩展字段
+     */
+    private String ext;
 }

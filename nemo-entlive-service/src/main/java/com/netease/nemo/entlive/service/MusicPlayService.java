@@ -42,4 +42,11 @@ public interface MusicPlayService {
      * @param orderId      点歌编号
      */
     void cleanPlayerMusicInfo(Long liveRecordId, Long orderId);
+
+
+    /**
+     * 清空当前直播间歌曲播放信息
+     * @param liveRecordId 直播间唯一编号
+     */
+    void cleanPlayerMusicInfo(Long liveRecordId);
 }

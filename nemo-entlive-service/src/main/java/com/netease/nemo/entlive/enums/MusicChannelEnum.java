@@ -5,7 +5,9 @@ import lombok.Getter;
 @Getter
 public enum MusicChannelEnum {
     NET_EASE_MUSIC(1, "网易云音乐版权"),
-    MI_GU_MUSIC(2, "咪咕音乐版权"),;
+    MI_GU_MUSIC(2, "咪咕音乐版权"),
+    HIFIVE_MUSIC(3, "hifive音乐版权渠道"),
+    ;
 
     /**
      * channel

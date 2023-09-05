@@ -22,7 +22,7 @@
     where id = #{id,jdbcType=BIGINT}
   </delete>
   <insert id="insert" keyColumn="id" keyProperty="id" parameterType="com.netease.nemo.model.po.UserDevice" useGeneratedKeys="true">
-    insert into user_device (user_uuid, device_id, create_time, 
+    insert into user_device (user_uuid, device_id, create_time,
       update_time)
     values (#{userUuid,jdbcType=VARCHAR}, #{deviceId,jdbcType=VARCHAR}, #{createTime,jdbcType=TIMESTAMP},
       #{updateTime,jdbcType=TIMESTAMP})

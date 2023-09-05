@@ -8,6 +8,7 @@ public class CreateNeRoomParam {
     private Long templateId;
     private String roomUuid;
     private String roomName;
+    private String ext;
     private String password;
     private RoomConfig roomConfig;
     private ExternalLiveConfig externalLiveConfig;

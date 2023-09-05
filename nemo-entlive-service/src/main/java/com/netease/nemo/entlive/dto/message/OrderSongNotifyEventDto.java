@@ -1,5 +1,7 @@
-package com.netease.nemo.entlive.dto;
+package com.netease.nemo.entlive.dto.message;
 
+import com.netease.nemo.entlive.dto.BasicUserDto;
+import com.netease.nemo.entlive.dto.OrderSongResultDto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

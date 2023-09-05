@@ -1,7 +1,6 @@
 package com.netease.nemo.context;
 
 import com.google.common.collect.ImmutableMap;
-import com.netease.nemo.openApi.dto.neroom.NeRoomMemberDto;
 import com.netease.nemo.util.UUIDUtil;
 import lombok.Data;
 import org.apache.commons.lang3.StringUtils;
@@ -12,13 +11,14 @@ public class Context {
     private String userUuid;
     private long startTime;
     private String traceId;
+    private String appKey;
+    private String secret;
+    private String appName;
     private String reqBody;
     private String clientIp;
+    private String clientType;
+    private String versionCode;
     private String deviceId;
-    private String imVersion;
-    private String rtcVersion;
-    private String roomKitVersion;
-    private String appKey;
     private String userToken;
     private ImmutableMap<String, String> headerMap;
     private String respMsg;
@@ -58,6 +58,18 @@ public class Context {
 
         if (!StringUtils.isEmpty(headerMap.get("appkey".toLowerCase()))) {
             this.appKey = headerMap.get("appkey".toLowerCase());
+        }
+
+        if (!StringUtils.isEmpty(headerMap.get("appkey".toLowerCase()))) {
+            this.appKey = headerMap.get("appkey".toLowerCase());
+        }
+
+        if (!StringUtils.isEmpty(headerMap.get("clientType".toLowerCase()))) {
+            this.clientType = headerMap.get("clientType".toLowerCase());
+        }
+
+        if (!StringUtils.isEmpty(headerMap.get("versionCode".toLowerCase()))) {
+            this.versionCode = headerMap.get("versionCode".toLowerCase());
         }
     }
 }

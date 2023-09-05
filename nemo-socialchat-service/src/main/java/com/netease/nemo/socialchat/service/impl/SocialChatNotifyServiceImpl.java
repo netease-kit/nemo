@@ -1,6 +1,7 @@
 package com.netease.nemo.socialchat.service.impl;
 
 import com.google.gson.JsonObject;
+import com.netease.nemo.context.Context;
 import com.netease.nemo.enums.RtcNotifyEnum;
 import com.netease.nemo.exception.BsException;
 import com.netease.nemo.openApi.dto.antispam.RtcAntispamDto;
@@ -37,6 +38,7 @@ public class SocialChatNotifyServiceImpl implements NotifyService {
      *  在演示项目中rtc相关的数据都保存在Redis中， 线上业务处理需结合实际业务需求实现
      */
     public void handleRtcMsg(String body) {
+        String appKey = Context.get().getAppKey();;
         log.info("handleRtcMsg body: {}", body);
         try {
             JsonObject jsonObject = GsonUtil.parseJsonObject(body);
@@ -51,26 +53,27 @@ public class SocialChatNotifyServiceImpl implements NotifyService {
                 case EVENT_TYPE_ROOM_START: {
                     RtcRoomNotifyParam param = GsonUtil.fromJson(data, RtcRoomNotifyParam.class);
                     param.setStatus(RtcStatusEnum.START.getStatus());
-                    oneToOneChatService.saveRtcRecord(param);
+                    oneToOneChatService.saveRtcRecord(appKey, param);
                     securityAuditService.submitSecurityAuditTask(param);
                     break;
                 }
                 case EVENT_TYPE_ROOM_END: {
                     RtcRoomNotifyParam param = GsonUtil.fromJson(data, RtcRoomNotifyParam.class);
                     param.setStatus(RtcStatusEnum.END.getStatus());
+                    oneToOneChatService.saveRtcRecord(appKey, param);
                     securityAuditService.stopSecurityAuditTask(param.getChannelId(), param.getChannelName());
                     break;
                 }
                 case EVENT_TYPE_ROOM_USER_IN: {
                     RtcRoomUserNotifyParam param = GsonUtil.fromJson(data, RtcRoomUserNotifyParam.class);
                     param.setStatus(RtcUserStatusEnum.IN_ROOM.getStatus());
-                    oneToOneChatService.saveRtcUserRecord(param);
+                    oneToOneChatService.saveRtcUserRecord(appKey, param);
                     break;
                 }
                 case EVENT_TYPE_ROOM_USER_OUT: {
                     RtcRoomUserNotifyParam param = GsonUtil.fromJson(data, RtcRoomUserNotifyParam.class);
                     param.setStatus(RtcUserStatusEnum.LEAVE.getStatus());
-                    oneToOneChatService.saveRtcUserRecord(param);
+                    oneToOneChatService.saveRtcUserRecord(appKey, param);
                     break;
                 }
                 case EVENT_TYPE_ROOM_SECURITY_AUDIT:

@@ -3,6 +3,7 @@ package com.netease.nemo.controller.entertainmentLive;
 import com.google.gson.JsonObject;
 import com.netease.nemo.annotation.RestResponseBody;
 import com.netease.nemo.config.YunXinConfigProperties;
+import com.netease.nemo.context.Context;
 import com.netease.nemo.service.NotifyService;
 import com.netease.nemo.util.CheckSumBuilder;
 import lombok.extern.slf4j.Slf4j;
@@ -47,7 +48,7 @@ public class NeRoomNotifyController {
             String checksum = request.getHeader("CheckSum");
 
             String verifyMD5 = CheckSumBuilder.getMD5(requestBody);
-            String verifyChecksum = CheckSumBuilder.getCheckSum(verifyMD5, curTime, yunXinConfigProperties.getAppSecret());
+            String verifyChecksum = CheckSumBuilder.getCheckSum(verifyMD5, curTime, Context.get().getSecret());
             if (verifyChecksum.equals(checksum)) {
                 notifyService.handlerNotify(requestBody);
             } else {

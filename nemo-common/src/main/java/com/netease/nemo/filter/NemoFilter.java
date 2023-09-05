@@ -6,6 +6,7 @@ import com.netease.nemo.config.YunXinConfigProperties;
 import com.netease.nemo.context.Context;
 import com.netease.nemo.context.ContextHandler;
 import com.netease.nemo.exception.BsException;
+import com.netease.nemo.log.LogService;
 import com.netease.nemo.util.IPUtil;
 import com.netease.nemo.util.gson.GsonUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -29,8 +30,13 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_UTF8_VALUE;
 @WebFilter(filterName = "NemoFilter", urlPatterns = "/*")
 public class NemoFilter implements Filter {
 
+    String BASE_URI_ATTRIBUTE = "org.springframework.web.servlet.HandlerMapping.bestMatchingPattern";
+
     @Resource
     private ContextHandler contextHandler;
+
+    @Resource
+    private LogService logService;
 
     @Resource
     private YunXinConfigProperties yunXinConfigProperties;
@@ -53,35 +59,29 @@ public class NemoFilter implements Filter {
             context.setClientIp(IPUtil.getRealClientIpAddr(requestWrapper));
             context.setHeaderMap(getHeader(httpServletRequest));
             context.setApiParam();
-
-            // 过滤健康检查请求
             if (httpServletRequest.getServletPath().startsWith("/nemo/health")) {
                 filterChain.doFilter(requestWrapper, servletResponse);
                 return;
             }
-
-            String appKey = Context.get().getAppKey();
-            if (StringUtils.isEmpty(appKey) || !yunXinConfigProperties.getAppKey().equals(appKey)) {
-                log.error("appKey is invalid, appKey: {}", appKey);
-                throw new BsException(ErrorCode.BAD_REQUEST, "appKey is invalid");
-            }
-
+            context.setClientIp(IPUtil.getRealClientIpAddr(requestWrapper));
+            setApp(context);
             log.debug("context init.");
             filterChain.doFilter(requestWrapper, servletResponse);
-        } catch (BsException e) {
-            log.error(e.getMessage(), e);
-            writerResponse(servletResponse, e.getCode(), e.getMsg());
+        } catch (BsException be) {
+            log.error(be.getMessage(), be);
+            writerResponse(servletResponse, be.getCode(), be.getMsg());
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             writerResponse(servletResponse, ErrorCode.INTERNAL_SERVER_ERROR, "internal server error");
         } finally {
             Context.get().setReqBody(new String(requestWrapper.getContentAsByteArray(), StandardCharsets.UTF_8));
+
             if (!requestWrapper.getRequestURI().startsWith("/nemo/health/")) {
-                log.info("Request Info, uri: {}, header: {}, requestBody: {}, result: {}, clientIP: {}",
-                        requestWrapper.getRequestURI(),
-                        GsonUtil.toJson(Context.get().getHeaderMap()), Context.get().getReqBody(),
-                        GsonUtil.toJson(Context.get().getRespBody()),
-                        Context.get().getClientIp());
+                // 记录日志
+                logService.logHttp(httpServletRequest.getMethod(),
+                        httpServletRequest.getRequestURI(), httpServletRequest.getQueryString(),
+                        IPUtil.getRealClientIpAddr(httpServletRequest),
+                        (String) httpServletRequest.getAttribute(BASE_URI_ATTRIBUTE));
             }
             // 清理日志 MDC
             contextHandler.destroy();
@@ -97,11 +97,22 @@ public class NemoFilter implements Filter {
         servletResponse.getWriter().write(GsonUtil.toJson(returnMap));
     }
 
+    private void setApp(Context context) {
+        String appKey = Context.get().getAppKey();
+        if (StringUtils.isEmpty(appKey) || !yunXinConfigProperties.getAppKey().equals(appKey)) {
+            log.error("appKey is invalid, appKey: {}", appKey);
+            throw new BsException(ErrorCode.BAD_REQUEST, "appKey is invalid");
+        }
+
+        context.setSecret(yunXinConfigProperties.getAppSecret());
+    }
+
+
     public ImmutableMap<String, String> getHeader(HttpServletRequest request) {
-        ImmutableMap.Builder<java.lang.String, java.lang.String> headerBuilder = ImmutableMap.builder();
-        Enumeration<java.lang.String> headerNames = request.getHeaderNames();
+        ImmutableMap.Builder<String, String> headerBuilder = ImmutableMap.builder();
+        Enumeration<String> headerNames = request.getHeaderNames();
         while (headerNames.hasMoreElements()) {
-            java.lang.String key = headerNames.nextElement();
+            String key = headerNames.nextElement();
             headerBuilder.put(key, request.getHeader(key));
         }
         return headerBuilder.build();

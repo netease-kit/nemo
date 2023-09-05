@@ -24,7 +24,6 @@ CREATE TABLE IF NOT EXISTS `user` (
   `update_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '记录更新时间',
   PRIMARY KEY (`id`),
   UNIQUE KEY `user_uuid` (`user_uuid`),
-  UNIQUE KEY `mobile` (`mobile`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COMMENT='用户表';
 
 

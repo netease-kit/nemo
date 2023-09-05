@@ -3,10 +3,7 @@ package com.netease.nemo.entlive.service.impl;
 import com.netease.nemo.entlive.dto.LiveRecordDto;
 import com.netease.nemo.entlive.enums.LiveEnum;
 import com.netease.nemo.entlive.parameter.neroomNotify.*;
-import com.netease.nemo.entlive.service.EntLiveService;
-import com.netease.nemo.entlive.service.EntNotifyService;
-import com.netease.nemo.entlive.service.LiveRecordService;
-import com.netease.nemo.entlive.service.OrderSongService;
+import com.netease.nemo.entlive.service.*;
 import com.netease.nemo.enums.RedisKeyEnum;
 import com.netease.nemo.locker.LockerService;
 import lombok.extern.slf4j.Slf4j;
@@ -38,6 +35,9 @@ public class EntNotifyServiceImpl implements EntNotifyService {
     @Resource
     private OrderSongService orderSongService;
 
+    @Resource
+    private MusicPlayService musicPlayService;
+
 
     @Override
     public void handlerCreateRoom(CreateRoomEventNotify param) {
@@ -47,21 +47,32 @@ public class EntNotifyServiceImpl implements EntNotifyService {
     @Override
     public void handlerCloseRoom(CloseRoomEventNotify param) {
         LiveRecordDto liveRecordDto = liveRecordService.getLiveRecordByRoomArchiveId(param.getRoomArchiveId());
-        if(liveRecordDto == null) {
+        if (liveRecordDto == null) {
             log.info("LiveRecord is valid");
             return;
         }
-        Long liveRecordId = liveRecordDto.getId();
+        if(liveRecordDto.getLive().equals(LiveEnum.LIVE_CLOSE.getCode())){
+            log.info("LiveRecord is closed");
+            return;
+        }
 
+        Long liveRecordId = liveRecordDto.getId();
         lockerService.tryLockAndDo(
-                () -> liveRecordService.updateLiveState(liveRecordId, LiveEnum.LIVE_CLOSE.getCode()),
+                () -> {
+                    // 变更当前直播状态为结束
+                    liveRecordService.updateLiveState(liveRecordId, LiveEnum.LIVE_CLOSE.getCode());
+                    // 清空当前播放歌曲信息
+                    musicPlayService.cleanPlayerMusicInfo(liveRecordId);
+                    // 清空点歌数据
+                    orderSongService.cleanOrderSongs(liveRecordId);
+                },
                 RedisKeyEnum.ENT_CREATE_LIVE_ROOM_LOCK_KEY, liveRecordId);
     }
 
     @Override
     public void handlerUserJoinRoom(JoinRoomEventNotify param) {
         LiveRecordDto liveRecordDto = liveRecordService.getLiveRecordByRoomArchiveId(param.getRoomArchiveId());
-        if(liveRecordDto == null) {
+        if (liveRecordDto == null) {
             log.info("LiveRecord is valid");
             return;
         }
@@ -86,7 +97,7 @@ public class EntNotifyServiceImpl implements EntNotifyService {
     @Override
     public void handlerUserLeaveRoom(LeaveRoomEventNotify param) {
         LiveRecordDto liveRecordDto = liveRecordService.getLiveRecordByRoomArchiveId(param.getRoomArchiveId());
-        if(liveRecordDto == null) {
+        if (liveRecordDto == null) {
             log.info("LiveRecord is valid");
             return;
         }
@@ -103,10 +114,6 @@ public class EntNotifyServiceImpl implements EntNotifyService {
                         () -> entLiveService.closeLiveRoom(o.getUserUuid(), liveRecordId),
                         RedisKeyEnum.ENT_LIVE_ROOM_LOCK_KEY, liveRecordId);
             }
-            // 删除用户点歌
-//            lockerService.tryLockAndDo(
-//                    () -> orderSongService.cleanUserOrderSongs(liveRecordId, o.getUserUuid()),
-//                    RedisKeyEnum.ENT_SONG_ORDER.getKeyPrefix(), liveRecordId);
         });
     }
 }

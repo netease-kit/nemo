@@ -24,9 +24,10 @@ public class MusicActionParam {
 
     }
 
-    public MusicActionParam(Integer action, Boolean firstPlay) {
-       this.action = action;
-       this.firstPlay = firstPlay;
+    public MusicActionParam(Long liveRecordId, Integer action, Boolean firstPlay) {
+        this.liveRecordId = liveRecordId;
+        this.action = action;
+        this.firstPlay = firstPlay;
    }
 
     public Integer getAction() {

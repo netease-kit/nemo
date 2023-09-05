@@ -25,10 +25,10 @@
     where id = #{id,jdbcType=BIGINT}
   </delete>
   <insert id="insert" keyColumn="id" keyProperty="id" parameterType="com.netease.nemo.model.po.UserReward" useGeneratedKeys="true">
-    insert into user_reward (user_uuid, gift_id, gift_count, 
+    insert into user_reward (user_uuid, gift_id, gift_count,
       cloud_coin, target, create_time, 
       update_time)
-    values (#{userUuid,jdbcType=VARCHAR}, #{giftId,jdbcType=BIGINT}, #{giftCount,jdbcType=INTEGER}, 
+    values (#{userUuid,jdbcType=VARCHAR}, #{giftId,jdbcType=BIGINT}, #{giftCount,jdbcType=INTEGER},
       #{cloudCoin,jdbcType=BIGINT}, #{target,jdbcType=VARCHAR}, #{createTime,jdbcType=TIMESTAMP}, 
       #{updateTime,jdbcType=TIMESTAMP})
   </insert>
