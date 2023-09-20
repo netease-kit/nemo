@@ -64,6 +64,7 @@ CREATE TABLE IF NOT EXISTS `live_record` (
   `status` tinyint NOT NULL DEFAULT '1' COMMENT '直播状态：1.有效，-1.无效',
   `live` tinyint NOT NULL DEFAULT '1' COMMENT '直播状态，-1.结束, 0.未开始，1.直播中',
   `live_type` tinyint NOT NULL DEFAULT '1' COMMENT '直播类型 1.互动直播  2.语聊房，3. KTV',
+  `live_config` varchar(1024) DEFAULT NULL COMMENT '直播配置信息',
   PRIMARY KEY (`id`),
   KEY `idx_room_uuid` (`room_uuid`),
   KEY `idx_room_archive_id` (`room_archive_id`),

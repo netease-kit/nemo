@@ -45,7 +45,7 @@ public class EntLiveControllerTest extends BaseTest {
     public void setUp() throws Exception {
         testContext = new TestContext();
         // 创建直播
-        initCreateLive();
+        initCreateLive(LiveTypeEnum.CHAT.getType());
 
         // 查询直播间信息
         LiveDto liveDto = testContext.getLiveIntroDto().getLive();
@@ -69,7 +69,7 @@ public class EntLiveControllerTest extends BaseTest {
         // 请求地址
         String urlTemplate = "/nemo/entertainmentLive/live/list";
         LiveListQueryParam param = new LiveListQueryParam();
-        param.setLiveType(LiveTypeEnum.LISTEN_TOGETHER.getType());
+        param.setLiveType(LiveTypeEnum.CHAT.getType());
         param.setPageNum(1);
         param.setPageSize(10);
 

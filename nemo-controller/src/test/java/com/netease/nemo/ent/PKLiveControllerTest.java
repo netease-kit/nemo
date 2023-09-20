@@ -1,16 +1,14 @@
 package com.netease.nemo.ent;
 
 import com.google.gson.JsonObject;
-import com.google.gson.reflect.TypeToken;
 import com.netease.nemo.BaseTest;
 import com.netease.nemo.Order;
 import com.netease.nemo.OrderedRunner;
 import com.netease.nemo.TestContext;
 import com.netease.nemo.entlive.dto.LiveDto;
-import com.netease.nemo.entlive.dto.OrderSongResultDto;
 import com.netease.nemo.entlive.enums.LiveTypeEnum;
-import com.netease.nemo.entlive.parameter.OrderSongParam;
-import com.netease.nemo.entlive.parameter.SwitchSongParam;
+import com.netease.nemo.entlive.parameter.LiveListQueryParam;
+import com.netease.nemo.entlive.parameter.LiveRewardParam;
 import com.netease.nemo.util.gson.GsonUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.After;
@@ -28,7 +26,7 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.RequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
-import java.util.List;
+import java.util.Arrays;
 
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 
@@ -41,13 +39,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 @AutoConfigureMockMvc
 @ActiveProfiles(value = "local")
 @RunWith(OrderedRunner.class)
-public class OrderSongControllerTest extends BaseTest {
+public class PKLiveControllerTest extends BaseTest {
 
     @Before
     public void setUp() throws Exception {
         testContext = new TestContext();
         // 创建直播
-        initCreateLive(LiveTypeEnum.CHAT.getType());
+        initCreateLive(LiveTypeEnum.INTERACTION_LIVE_CROSS_CHANNEL.getType());
 
         // 查询直播间信息
         LiveDto liveDto = testContext.getLiveIntroDto().getLive();
@@ -66,15 +64,14 @@ public class OrderSongControllerTest extends BaseTest {
 
     @Test
     @Order(0)
-    public void test_OrderSong() throws Exception {
+    public void test_GetListLive() throws Exception {
         // 请求地址
-        String urlTemplate = "/nemo/entertainmentLive/live/song/orderSong";
-        OrderSongParam param = new OrderSongParam();
-        param.setSongId("1E09736E7BEDC67253A6ED9336F1BAA1");
-        param.setSongCover("songCover");
-        param.setSongName("songName");
-        param.setChannel(1);
-        param.setLiveRecordId(testContext.getLiveIntroDto().getLive().getId());
+        // 请求地址
+        String urlTemplate = "/nemo/entertainmentLive/live/list";
+        LiveListQueryParam param = new LiveListQueryParam();
+        param.setLiveType(LiveTypeEnum.INTERACTION_LIVE_CROSS_CHANNEL.getType());
+        param.setPageNum(1);
+        param.setPageSize(10);
 
         /* 请求头集合 */
         HttpHeaders headers = hostHeader();
@@ -108,59 +105,17 @@ public class OrderSongControllerTest extends BaseTest {
 
     @Test
     @Order(1)
-    public void test_GetOrderSongList() throws Exception {
-        test_OrderSong();
-
+    public void test_Reward() throws Exception {
         // 请求地址
-        String urlTemplate = "/nemo/entertainmentLive/live/song/getOrderSongs";
+        String urlTemplate = "/nemo/entertainmentLive/live/batch/reward";
+        LiveRewardParam param = new LiveRewardParam();
+        param.setLiveRecordId(testContext.getLiveIntroDto().getLive().getId());
+        param.setTargets(Arrays.asList("ch"));
+        param.setGiftId(1L);
+        param.setGiftCount(10);
+
         /* 请求头集合 */
         HttpHeaders headers = audienceHeader();
-
-        // 请求
-        RequestBuilder request = MockMvcRequestBuilders
-                // post请求
-                .get(urlTemplate)
-                // 数据类型
-                .contentType(MediaType.APPLICATION_JSON)
-                // 请求头
-                .headers(headers)
-                // 请求体
-                .param("liveRecordId", String.valueOf(testContext.getLiveIntroDto().getLive().getId()));
-
-        MvcResult mvcResult = mockMvc.perform(request)
-                // 打印日志
-                .andDo(print())
-                // 获取返回值
-                .andReturn();
-
-        //从返回值获取响应的内容
-        String contentAsString = mvcResult.getResponse().getContentAsString();
-        log.info("contentAsString:{}", contentAsString);
-
-        JsonObject jsonObject = GsonUtil.fromJson(contentAsString, JsonObject.class);
-
-        Assertions.assertEquals(jsonObject.get("code").getAsInt(), HttpStatus.OK.value());
-        List<OrderSongResultDto> gameRoomMemberDtos = GsonUtil.fromJson(jsonObject.get("data"), new TypeToken<List<OrderSongResultDto>>() {
-        }.getType());
-        Assertions.assertTrue(gameRoomMemberDtos != null && gameRoomMemberDtos.size() > 0);
-
-        testContext.setOrderSongResultDtoList(gameRoomMemberDtos);
-    }
-
-    @Test
-    @Order(2)
-    public void test_SwitchOrderSong() throws Exception {
-        test_GetOrderSongList();
-
-        // 请求地址
-        String urlTemplate = "/nemo/entertainmentLive/live/song/switchSong";
-
-        SwitchSongParam param = new SwitchSongParam();
-        param.setLiveRecordId(testContext.getLiveIntroDto().getLive().getId());
-        param.setCurrentOrderId(testContext.getOrderSongResultDtoList().get(0).getOrderSong().getId());
-        param.setAttachment("test");
-        /* 请求头集合 */
-        HttpHeaders headers = hostHeader();
 
         // 请求
         RequestBuilder request = MockMvcRequestBuilders
@@ -185,6 +140,7 @@ public class OrderSongControllerTest extends BaseTest {
 
         JsonObject jsonObject = GsonUtil.fromJson(contentAsString, JsonObject.class);
 
+        // 打赏成功
         Assertions.assertEquals(jsonObject.get("code").getAsInt(), HttpStatus.OK.value());
     }
 }

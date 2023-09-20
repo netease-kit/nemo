@@ -7,6 +7,7 @@ import com.netease.nemo.code.ErrorCode;
 import com.netease.nemo.context.Context;
 import com.netease.nemo.entlive.dto.LiveIntroDto;
 import com.netease.nemo.entlive.enums.LiveTypeEnum;
+import com.netease.nemo.entlive.enums.RoomProfileEnum;
 import com.netease.nemo.entlive.enums.SeatModeEnum;
 import com.netease.nemo.entlive.parameter.CreateLiveParam;
 import com.netease.nemo.entlive.parameter.LiveListQueryParam;
@@ -131,5 +132,10 @@ public class EntLiveController {
         if (!StringUtils.isEmpty(param.getExt()) && param.getExt().length() > 2048) {
             throw new BsException(ErrorCode.BAD_REQUEST, "The Ext Length Exceed Limit: 2048");
         }
+
+        if (null != param.getRoomProfile() && RoomProfileEnum.fromCode(param.getRoomProfile()) == null) {
+            throw new BsException(ErrorCode.BAD_REQUEST, "roomProfile enum error");
+        }
+
     }
 }

@@ -57,4 +57,10 @@ public class LiveRecordDto {
      * 直播类型 1.互动直播 2.语聊房，3. KTV
      */
     private Integer liveType;
+
+    /**
+     * 直播配置
+     */
+    private transient String liveConfig;
+
 }

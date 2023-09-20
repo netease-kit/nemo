@@ -3,6 +3,7 @@ package com.netease.nemo.entlive.service.impl;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.google.gson.JsonObject;
 import com.netease.nemo.code.ErrorCode;
 import com.netease.nemo.config.YunXinConfigProperties;
 import com.netease.nemo.context.Context;
@@ -26,12 +27,15 @@ import com.netease.nemo.enums.EventTypeEnum;
 import com.netease.nemo.exception.BsException;
 import com.netease.nemo.model.po.Gift;
 import com.netease.nemo.openApi.NeRoomService;
+import com.netease.nemo.openApi.NimService;
 import com.netease.nemo.openApi.dto.neroom.CreateNeRoomDto;
 import com.netease.nemo.openApi.dto.neroom.NeRoomSeatDto;
+import com.netease.nemo.openApi.dto.nim.YunxinCreateLiveChannelDto;
 import com.netease.nemo.openApi.paramters.neroom.CreateNeRoomParam;
 import com.netease.nemo.service.UserService;
 import com.netease.nemo.util.ObjectMapperUtil;
 import com.netease.nemo.util.UUIDUtil;
+import com.netease.nemo.util.gson.GsonUtil;
 import com.netease.nemo.wrapper.GiftMapperWrapper;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
@@ -71,6 +75,10 @@ public class EntLiveServiceImpl implements EntLiveService {
 
     @Value("${business.listenTogetherConfigId}")
     private Long listenTogetherConfigId;
+
+    @Value("${business.pkConfigId}")
+    private Long pkConfigId;
+
     @Resource
     private LiveRecordWrapper liveRecordWrapper;
 
@@ -85,6 +93,9 @@ public class EntLiveServiceImpl implements EntLiveService {
 
     @Resource
     private NeRoomMemberService neRoomMemberService;
+
+    @Resource
+    private NimService nimService;
 
     @Resource
     private ModelMapper modelMapper;
@@ -116,7 +127,7 @@ public class EntLiveServiceImpl implements EntLiveService {
         UserDto userDto = userService.getUser(host);
         LiveRecord liveRecordExists = liveRecordWrapper.selectByUserUuidAndType(host, param.getLiveType());
         if (liveRecordExists != null) {
-            return new LiveIntroDto(BasicUserDto.buildBasicUser(userDto), ObjectMapperUtil.map(liveRecordExists, LiveDto.class));
+            return new LiveIntroDto(BasicUserDto.buildBasicUser(userDto), LiveDto.fromLiveRecord(liveRecordExists));
         }
 
         // TODO 使用分布式ID生成保证ID唯一
@@ -126,16 +137,21 @@ public class EntLiveServiceImpl implements EntLiveService {
         }
 
         CreateNeRoomParam createNeRoomParam = buildCreateNeRoomParam(param, roomUuid);
-        CreateNeRoomDto neRoomDto = neRoomService.createNeRoom(createNeRoomParam);
+        YunxinCreateLiveChannelDto yunxinCreateLiveChannelDto = null;
+        if (LiveTypeEnum.isPkLive(param.getLiveType())) {
+            yunxinCreateLiveChannelDto = nimService.createLive(roomUuid + System.currentTimeMillis(), null);
+            createNeRoomParam.setExternalLiveConfig(CreateNeRoomParam.ExternalLiveConfig.toExternalLiveConfig(yunxinCreateLiveChannelDto));
+        }
 
-        LiveRecord liveRecord = LiveRecord.builderLiveRecord(param, host, roomUuid, neRoomDto.getRoomArchiveId());
+        CreateNeRoomDto neRoomDto = neRoomService.createNeRoom(createNeRoomParam);
+        LiveRecord liveRecord = LiveRecord.builderLiveRecord(param, host, roomUuid, neRoomDto.getRoomArchiveId(), yunxinCreateLiveChannelDto);
         int res = liveRecordWrapper.insertSelective(liveRecord);
         if (res < 1) {
             log.error("addLiveRecord failed");
             throw new BsException(ErrorCode.INTERNAL_SERVER_ERROR);
         }
 
-        return new LiveIntroDto(BasicUserDto.buildBasicUser(userDto), ObjectMapperUtil.map(liveRecord, LiveDto.class));
+        return new LiveIntroDto(BasicUserDto.buildBasicUser(userDto), LiveDto.fromLiveRecord(liveRecord));
     }
 
 
@@ -151,9 +167,9 @@ public class EntLiveServiceImpl implements EntLiveService {
         createNeRoomParam.setRoomName(param.getRoomName());
         createNeRoomParam.setRoomUuid(roomUuid);
 
-        // 判断直播类型是否是一起听,如果是一起听,则使用一起听的配置id,否则使用语音房的配置id
         Integer seatCount =  param.getSeatCount();
-        createNeRoomParam.setTemplateId(getDefaultTemplateId(param.getLiveType()));
+        // 如果configId为空，则使用默认配置id
+        createNeRoomParam.setTemplateId(param.getConfigId() != null ? param.getConfigId() : getDefaultTemplateId(param.getLiveType()));
 
         CreateNeRoomParam.RoomSeatConfig roomSeatConfig = new CreateNeRoomParam.RoomSeatConfig();
         roomSeatConfig.setApplyMode(SeatModeEnum.fromCode(param.getSeatApplyMode()) == null ? 0 : param.getSeatApplyMode());
@@ -165,6 +181,7 @@ public class EntLiveServiceImpl implements EntLiveService {
         }
 
         createNeRoomParam.setRoomConfig(new CreateNeRoomParam.RoomConfig(CreateNeRoomParam.ResourceConfig.buildEntVoiceRoom()));
+        createNeRoomParam.setRoomProfile(param.getRoomProfile());
         return createNeRoomParam;
     }
 
@@ -194,7 +211,10 @@ public class EntLiveServiceImpl implements EntLiveService {
             return listenTogetherConfigId;
         } else if (LiveTypeEnum.CHAT.getType() == liveType) {
             return voiceRoomConfigId;
+        } else if (LiveTypeEnum.INTERACTION_LIVE_CROSS_CHANNEL.getType() == liveType) {
+            return pkConfigId;
         }
+
         return voiceRoomConfigId;
     }
 
@@ -204,10 +224,10 @@ public class EntLiveServiceImpl implements EntLiveService {
         if (null == liveRecordDto || !LiveEnum.isLive(liveRecordDto.getLive())) {
             throw new BsException(ErrorCode.ANCHOR_NOT_LIVING);
         }
-
+        Boolean isHost = Context.get().getUserUuid().equals(liveRecordDto.getUserUuid());
         // 构造直播间信息
         LiveDto liveDto = ObjectMapperUtil.map(liveRecordDto, LiveDto.class);
-        buildLiveDto(liveDto);
+        buildLiveDto(liveDto, isHost);
 
         UserDto userDto = userService.getUser(liveRecordDto.getUserUuid());
         return new LiveIntroDto(BasicUserDto.buildBasicUser(userDto), liveDto);
@@ -220,6 +240,12 @@ public class EntLiveServiceImpl implements EntLiveService {
         if (!operator.equals(liveRecord.getUserUuid())) {
             throw new BsException(ErrorCode.FORBIDDEN, "用户无权限关播");
         }
+
+        if (LiveTypeEnum.isPkLive(liveRecord.getLiveType())) {
+            JsonObject live = GsonUtil.parseJsonObject(liveRecord.getLiveConfig());
+            nimService.deleteLiveChannel(live.get("cid").getAsString());
+        }
+
 
         // 删除NeRoom房间
         neRoomService.deleteNeRoom(liveRecord.getRoomArchiveId());
@@ -254,7 +280,8 @@ public class EntLiveServiceImpl implements EntLiveService {
             LiveIntroDto liveIntroDto = new LiveIntroDto();
 
             LiveDto liveDto = modelMapper.map(s, LiveDto.class);
-            buildLiveDto(liveDto);
+            Boolean isHost = Context.get().getUserUuid().equals(s.getUserUuid());
+            buildLiveDto(liveDto, isHost);
 
             liveIntroDto.setLive(liveDto);
 
@@ -349,8 +376,9 @@ public class EntLiveServiceImpl implements EntLiveService {
      * 构造直播间信息 NeRoom房间人数和打赏总数
      *
      * @param liveDto liveDto直播信息对象
+     * @param isHost  是否主播操作
      */
-    private void buildLiveDto(LiveDto liveDto) {
+    private void buildLiveDto(LiveDto liveDto, Boolean isHost) {
 
         // 获取NeRoom人数
         long neRoomMemberSize = neRoomMemberService.getRoomMemberSize(liveDto.getRoomArchiveId());
@@ -366,6 +394,14 @@ public class EntLiveServiceImpl implements EntLiveService {
 
         // 设置麦上主播打赏总数
         liveDto.setSeatUserReward(getSeatUserReward(liveDto.getId(), neRoomSeats));
+
+        if (null != liveDto.getLiveConfig()) {
+            YunxinCreateLiveChannelDto yunxinCreateLiveChannelDto = GsonUtil.fromJson(liveDto.getLiveConfig(), YunxinCreateLiveChannelDto.class);
+            if (!isHost) {
+                yunxinCreateLiveChannelDto.setPushUrl(null);
+            }
+            liveDto.setExternalLiveConfig(CreateNeRoomParam.ExternalLiveConfig.toExternalLiveConfig(yunxinCreateLiveChannelDto));
+        }
     }
 
     /**

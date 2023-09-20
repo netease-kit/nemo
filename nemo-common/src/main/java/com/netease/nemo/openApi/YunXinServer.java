@@ -64,8 +64,7 @@ public class YunXinServer {
         HttpHeaders httpHeaders = new HttpHeaders();
         addCheckSumHeader(httpHeaders);
         httpHeaders.add("Content-Type", "application/json;charset=utf-8");
-        HttpEntity entity = new HttpEntity(body, httpHeaders);
-
+        HttpEntity entity = new HttpEntity(GsonUtil.toJson(body), httpHeaders);
         return requestForEntity(yunXinConfigProperties.getNeRoomHost(), url, method, entity, NeRoomResponse.class);
     }
 
@@ -80,7 +79,7 @@ public class YunXinServer {
         HttpHeaders httpHeaders = new HttpHeaders();
         addCheckSumHeader(httpHeaders);
         httpHeaders.add("Content-Type", "application/json;charset=utf-8");
-        HttpEntity entity = new HttpEntity(body, httpHeaders);
+        HttpEntity entity = new HttpEntity(GsonUtil.toJson(body), httpHeaders);
 
         return requestForEntity(yunXinConfigProperties.getSecurityAuditHost(), uri, HttpMethod.POST, entity, LiveWallSolutionResponse.class);
     }

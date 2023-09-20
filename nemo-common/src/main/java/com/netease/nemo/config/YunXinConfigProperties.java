@@ -20,6 +20,11 @@ public class YunXinConfigProperties {
     private String nimHost;
 
     /**
+     * 云信直播频道服务地址
+     */
+    private String neLiveHost;
+
+    /**
      * 云信NeRoom服务地址
      */
     private String neRoomHost;

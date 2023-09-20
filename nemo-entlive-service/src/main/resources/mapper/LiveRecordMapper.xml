@@ -14,10 +14,11 @@
     <result column="status" jdbcType="TINYINT" property="status" />
     <result column="live" jdbcType="TINYINT" property="live" />
     <result column="live_type" jdbcType="TINYINT" property="liveType" />
+    <result column="live_config" jdbcType="VARCHAR" property="liveConfig" />
   </resultMap>
   <sql id="Base_Column_List">
     id, room_archive_id, room_uuid, room_name, user_uuid, live_topic, cover, create_time,
-    update_time, status, live, live_type
+    update_time, status, live, live_type, live_config
   </sql>
   <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="BaseResultMap">
     select 
@@ -33,11 +34,11 @@
     insert into live_record (room_archive_id, room_uuid, room_name,
       user_uuid, live_topic, cover, 
       create_time, update_time, status, 
-      live, live_type)
+      live, live_type, live_config)
     values (#{roomArchiveId,jdbcType=VARCHAR}, #{roomUuid,jdbcType=VARCHAR}, #{roomName,jdbcType=VARCHAR},
       #{userUuid,jdbcType=VARCHAR}, #{liveTopic,jdbcType=VARCHAR}, #{cover,jdbcType=VARCHAR}, 
       #{createTime,jdbcType=TIMESTAMP}, #{updateTime,jdbcType=TIMESTAMP}, #{status,jdbcType=TINYINT}, 
-      #{live,jdbcType=TINYINT}, #{liveType,jdbcType=TINYINT})
+      #{live,jdbcType=TINYINT}, #{liveType,jdbcType=TINYINT}, #{liveConfig,jdbcType=VARCHAR})
   </insert>
   <insert id="insertSelective" keyColumn="id" keyProperty="id" parameterType="com.netease.nemo.entlive.model.po.LiveRecord" useGeneratedKeys="true">
     insert into live_record
@@ -75,6 +76,9 @@
       <if test="liveType != null">
         live_type,
       </if>
+      <if test="liveConfig != null">
+        live_config,
+      </if>
     </trim>
     <trim prefix="values (" suffix=")" suffixOverrides=",">
       <if test="roomArchiveId != null">
@@ -109,6 +113,9 @@
       </if>
       <if test="liveType != null">
         #{liveType,jdbcType=TINYINT},
+      </if>
+      <if test="liveConfig != null">
+        #{liveConfig,jdbcType=VARCHAR},
       </if>
     </trim>
   </insert>
@@ -148,6 +155,9 @@
       <if test="liveType != null">
         live_type = #{liveType,jdbcType=TINYINT},
       </if>
+      <if test="liveConfig != null">
+        live_config = #{liveConfig,jdbcType=VARCHAR},
+      </if>
     </set>
     where id = #{id,jdbcType=BIGINT}
   </update>
@@ -163,7 +173,8 @@
       update_time = #{updateTime,jdbcType=TIMESTAMP},
       status = #{status,jdbcType=TINYINT},
       live = #{live,jdbcType=TINYINT},
-      live_type = #{liveType,jdbcType=TINYINT}
+      live_type = #{liveType,jdbcType=TINYINT},
+      live_config = #{liveConfig,jdbcType=VARCHAR}
     where id = #{id,jdbcType=BIGINT}
   </update>
 

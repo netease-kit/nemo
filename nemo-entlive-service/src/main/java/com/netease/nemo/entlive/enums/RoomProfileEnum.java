@@ -33,6 +33,6 @@ public enum RoomProfileEnum {
                 return value;
             }
         }
-        throw new BsException(ErrorCode.BAD_REQUEST);
+        return  null;
     }
 }
