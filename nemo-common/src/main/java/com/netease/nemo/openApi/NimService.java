@@ -1,9 +1,11 @@
 package com.netease.nemo.openApi;
 
+import com.google.gson.JsonObject;
 import com.netease.nemo.code.ErrorCode;
 import com.netease.nemo.config.YunXinConfigProperties;
 import com.netease.nemo.exception.BsException;
 import com.netease.nemo.openApi.dto.nim.ImMsgDto;
+import com.netease.nemo.openApi.dto.nim.YunxinCreateLiveChannelDto;
 import com.netease.nemo.openApi.dto.response.ImResponse;
 import com.netease.nemo.openApi.dto.response.LiveWallSolutionResponse;
 import com.netease.nemo.openApi.enums.ImMsgTypeEnum;
@@ -296,4 +298,72 @@ public class NimService {
             throw new BsException(ErrorCode.INTERNAL_SERVER_ERROR);
         }
     }
+
+    public YunxinCreateLiveChannelDto createLive(String name, Integer type) {
+        log.info("createLive start");
+        JsonObject jo = new JsonObject();
+        jo.addProperty("name", name);
+        if(null != type) {
+            jo.addProperty("type", type);
+        }
+
+        String url = "/app/channel/create";
+
+        HttpHeaders httpHeaders = new HttpHeaders();
+        yunXinServer.addCheckSumHeader(httpHeaders);
+        httpHeaders.add("Content-Type", "application/json; charset=utf-8");
+        HttpEntity entity = new HttpEntity(GsonUtil.toJson(jo), httpHeaders);
+
+        String response = yunXinServer.requestForEntity(yunXinConfigProperties.getNeLiveHost(), url, HttpMethod.POST, entity, String.class);
+        if (StringUtils.isEmpty(response)) {
+            throw new BsException(ErrorCode.FORBIDDEN);
+        }
+
+        JsonObject bodyJo = GsonUtil.parseJsonObjectIfNotNull(response);
+        Integer code = GsonUtil.getInt(bodyJo, "code");
+        if (code == null || code != 200) {
+            throw new BsException(ErrorCode.INTERNAL_SERVER_ERROR);
+        }
+        JsonObject retJo = GsonUtil.getJsonObject(bodyJo, "ret");
+        if (retJo == null) {
+            throw new BsException(ErrorCode.INTERNAL_SERVER_ERROR);
+        }
+        String pushUrl = GsonUtil.getString(retJo, "pushUrl");
+        String rtmpPullUrl = GsonUtil.getString(retJo, "rtmpPullUrl");
+        String hlsPullUrl = GsonUtil.getString(retJo, "hlsPullUrl");
+        String httpPullUrl = GsonUtil.getString(retJo, "httpPullUrl");
+
+        if (StringUtils.isAnyEmpty(pushUrl, rtmpPullUrl, hlsPullUrl, httpPullUrl)) {
+            throw new BsException(ErrorCode.INTERNAL_SERVER_ERROR);
+        }
+        log.info("createLive end");
+        return GsonUtil.fromJson(retJo, YunxinCreateLiveChannelDto.class);
+    }
+
+    public void deleteLiveChannel( String cid) {
+        log.info("deleteLiveChannel start");
+        if (StringUtils.isEmpty(cid)) {
+            log.warn("deleteLiveChannel cid is empty");
+            return;
+        }
+        JsonObject jo = new JsonObject();
+        jo.addProperty("cid", cid);
+        String url = "/app/channel/delete";
+        HttpHeaders httpHeaders = new HttpHeaders();
+        yunXinServer.addCheckSumHeader(httpHeaders);
+        httpHeaders.add("Content-Type", "application/json; charset=utf-8");
+        HttpEntity entity = new HttpEntity(jo.toString(), httpHeaders);
+
+        String response = yunXinServer.requestForEntity(yunXinConfigProperties.getNeLiveHost(), url, HttpMethod.POST, entity, String.class);
+        if (StringUtils.isEmpty(response)) {
+            throw new BsException(ErrorCode.FORBIDDEN);
+        }
+        JsonObject bodyJo = GsonUtil.parseJsonObjectIfNotNull(response);
+        Integer code = GsonUtil.getInt(bodyJo, "code");
+        if (code == null || code != 200) {
+            throw new BsException(ErrorCode.INTERNAL_SERVER_ERROR);
+        }
+        log.info("deleteLiveChannel end");
+    }
+
 }

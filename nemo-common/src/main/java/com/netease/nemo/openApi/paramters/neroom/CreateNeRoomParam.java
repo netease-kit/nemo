@@ -1,5 +1,6 @@
 package com.netease.nemo.openApi.paramters.neroom;
 
+import com.netease.nemo.openApi.dto.nim.YunxinCreateLiveChannelDto;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -11,6 +12,7 @@ public class CreateNeRoomParam {
     private String ext;
     private String password;
     private RoomConfig roomConfig;
+    private Integer roomProfile;
     private ExternalLiveConfig externalLiveConfig;
     private RoomSeatConfig roomSeatConfig;
 
@@ -57,6 +59,21 @@ public class CreateNeRoomParam {
         private String pullRtmpUrl;
         private String pullHttpUrl;
         private String pullRtsUrl;
+
+
+        public ExternalLiveConfig() {
+        }
+
+        public static CreateNeRoomParam.ExternalLiveConfig toExternalLiveConfig(YunxinCreateLiveChannelDto yunxinCreateLiveChannelDto) {
+            CreateNeRoomParam.ExternalLiveConfig externalLiveConfig = new CreateNeRoomParam.ExternalLiveConfig();
+            externalLiveConfig.setPullHlsUrl(yunxinCreateLiveChannelDto.getHlsPullUrl());
+            externalLiveConfig.setPullHttpUrl(yunxinCreateLiveChannelDto.getHttpPullUrl());
+            externalLiveConfig.setPullRtmpUrl(yunxinCreateLiveChannelDto.getRtmpPullUrl());
+            externalLiveConfig.setPullRtsUrl(yunxinCreateLiveChannelDto.getRtsPullUrl());
+            externalLiveConfig.setPushUrl(yunxinCreateLiveChannelDto.getPushUrl());
+            return externalLiveConfig;
+        }
+
     }
 
     @Data

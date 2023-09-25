@@ -3,6 +3,8 @@ package com.netease.nemo.entlive.model.po;
 import com.netease.nemo.entlive.enums.LiveEnum;
 import com.netease.nemo.entlive.enums.StatusEnum;
 import com.netease.nemo.entlive.parameter.CreateLiveParam;
+import com.netease.nemo.openApi.dto.nim.YunxinCreateLiveChannelDto;
+import com.netease.nemo.util.gson.GsonUtil;
 
 import java.util.Date;
 
@@ -72,6 +74,8 @@ public class LiveRecord {
      */
     private Integer liveType;
 
+    private String liveConfig;
+
 
     public LiveRecord() {
     }
@@ -85,6 +89,15 @@ public class LiveRecord {
         this(liveRecordId, live);
         this.status = status;
     }
+
+    public static LiveRecord builderLiveRecord(CreateLiveParam param,  String userUuid, String roomUuid, String roomArchiveId, YunxinCreateLiveChannelDto yunxinCreateLiveChannelDto) {
+        LiveRecord liveRecord = builderLiveRecord(param, userUuid, roomUuid, roomArchiveId);
+        if (null != yunxinCreateLiveChannelDto) {
+            liveRecord.setLiveConfig(GsonUtil.toJson(yunxinCreateLiveChannelDto));
+        }
+        return liveRecord;
+    }
+
 
     public static LiveRecord builderLiveRecord(CreateLiveParam param, String userUuid, String roomUuid, String roomArchiveId) {
         LiveRecord liveRecord = new LiveRecord();
@@ -195,4 +208,13 @@ public class LiveRecord {
     public void setLiveType(Integer liveType) {
         this.liveType = liveType;
     }
+
+    public String getLiveConfig() {
+        return liveConfig;
+    }
+
+    public void setLiveConfig(String liveConfig) {
+        this.liveConfig = liveConfig;
+    }
+
 }

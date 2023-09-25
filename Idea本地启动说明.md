@@ -70,7 +70,7 @@ curl --location --request POST 'http://127.0.0.1:9981/nemo/app/initAppAndUser' \
 --header 'Appkey: {APPKey}' \
 --header 'AppSecret: {AppSecret}' \
 --header 'Content-Type: application/json' \
- --data-raw '{"userName":"test","sceneType":2,"userUuid":"test","imToken":"test","icon":"test"}';
+ --data-raw '{"userName":"test","userUuid":"test","imToken":"test","icon":"test"}';
 ```
 返回结果code 200 则本地启动成功
 

@@ -93,10 +93,19 @@ public class BaseTest {
         return param;
     }
 
-    protected void initCreateLive() throws Exception {
+    protected CreateLiveParam initCreateLiveParam(Integer liveType) {
+        CreateLiveParam param = new CreateLiveParam();
+        param.setSeatCount(2);
+        param.setCover("Test.jpg");
+        param.setLiveTopic("TestGame");
+        param.setLiveType(liveType);
+        return param;
+    }
+
+    protected void initCreateLive(Integer liveType) throws Exception {
         // 请求地址
         String urlTemplate = "/nemo/entertainmentLive/live/createLive";
-        CreateLiveParam createLiveParam = initCreateLiveParam();
+        CreateLiveParam createLiveParam = initCreateLiveParam(liveType);
 
         /* 请求头集合 */
         HttpHeaders headers = hostHeader();
@@ -174,7 +183,10 @@ public class BaseTest {
 
         LiveIntroDto liveIntroDto = GsonUtil.fromJson(jsonObject.get("data"), LiveIntroDto.class);
         Assertions.assertEquals(LiveEnum.LIVE.getCode(), liveIntroDto.getLive().getLive().intValue());
-
+        LiveDto liveDto = liveIntroDto.getLive();
+        if (liveDto.getLiveType() == LiveTypeEnum.INTERACTION_LIVE.getType()) {
+            Assertions.assertTrue(liveDto.getExternalLiveConfig() != null);
+        }
         // 设置最新的直播信息到上下文
         testContext.setLiveIntroDto(liveIntroDto);
     }

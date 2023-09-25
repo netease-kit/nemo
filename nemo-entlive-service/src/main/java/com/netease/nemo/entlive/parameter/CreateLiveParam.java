@@ -61,4 +61,10 @@ public class CreateLiveParam {
      * 扩展字段
      */
     private String ext;
+
+    /**
+     * NeRoom 模板ID
+     */
+    private Long configId;
+
 }
