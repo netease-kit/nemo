@@ -22,6 +22,8 @@ public enum RedisKeyEnum {
     ENT_CREATE_LIVE_ROOM_LOCK_KEY("ent_create_live_room_lock_key_","创建直播房间lock key tag"),
     ENT_LIVE_ROOM_LOCK_KEY("ent_live_room_lock_key_","直播房间lock key tag"),
     NE_ROOM_MEMBER_TABLE_KEY("ent_ne_room_table_key","NeRoom成员表"),
+    NE_ROOM_SEAT_USER_TABLE_KEY("ne_room_seat_user_table_key","NeRoom麦位成员表"),
+
     ENT_SONG_ORDER("ent_song_order_lock_key_","点歌台 lock key tag"),
 
     /**
@@ -37,7 +39,31 @@ public enum RedisKeyEnum {
     /**
      * 主播直播房间歌曲准备key  table  key：ent_music_play_ready_info_:{liveRecordId}:{orderId} filed: userUuid value: 歌曲状态
      */
-    ENT_MUSIC_PLAY_READY_INFO_KEY("ent_music_play_ready_info_", "主播直播房间歌曲准备信息key");
+    ENT_MUSIC_PLAY_READY_INFO_KEY("ent_music_play_ready_info_", "主播直播房间歌曲准备信息key"),
+
+    /**
+     * ktv演唱lockKey
+     */
+    ENT_KTV_SING_LOCKER_KEY("ent_ktv_sing_locker_key_","ktv演唱Key"),
+
+
+    /**
+     * ktv歌唱的基础信息 Key
+     */
+    ENT_KTV_SING_BASE_INFO("ent_ktv_sing_base_info_", "ktv歌唱的基础信息 Key"),
+
+    /**
+     * 用户游戏状态 key：user_game_status_key::{appKey}::{roomUuid}::{userUuid}, value: 游戏状态
+     */
+    USER_GAME_STATUS_KEY("user_game_status_key", "用户游戏状态key"),
+
+    /**
+     * 游戏房分布式锁
+     */
+    GAME_ROOM_LOCK_KEY("game_room_lock_key_","游戏房间lock key tag"),
+    ;
+
+
     ;
     /** redis的key前缀 */
     private final String keyPrefix;

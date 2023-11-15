@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.netease.nemo.game.mapper.GameRecordHistoryMapper">
+  <resultMap id="BaseResultMap" type="com.netease.nemo.game.model.po.GameRecordHistory">
+    <id column="id" jdbcType="BIGINT" property="id" />
+    <result column="game_record_id" jdbcType="BIGINT" property="gameRecordId" />
+    <result column="live_record_id" jdbcType="BIGINT" property="liveRecordId" />
+    <result column="room_uuid" jdbcType="VARCHAR" property="roomUuid" />
+    <result column="game_creator" jdbcType="VARCHAR" property="gameCreator" />
+    <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+    <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
+    <result column="game_status" jdbcType="TINYINT" property="gameStatus" />
+    <result column="game_id" jdbcType="VARCHAR" property="gameId" />
+    <result column="game_name" jdbcType="VARCHAR" property="gameName" />
+    <result column="game_desc" jdbcType="VARCHAR" property="gameDesc" />
+    <result column="thumbnail" jdbcType="VARCHAR" property="thumbnail" />
+    <result column="rule" jdbcType="VARCHAR" property="rule" />
+    <result column="room_archive_id" jdbcType="VARCHAR" property="roomArchiveId" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    id, game_record_id, live_record_id, room_uuid, game_creator, create_time, update_time, game_status,
+    game_id, game_name, game_desc, thumbnail, rule, room_archive_id
+  </sql>
+  <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from game_record_history
+    where id = #{id,jdbcType=BIGINT}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+    delete from game_record_history
+    where id = #{id,jdbcType=BIGINT}
+  </delete>
+  <insert id="insert" keyColumn="id" keyProperty="id" parameterType="com.netease.nemo.game.model.po.GameRecordHistory" useGeneratedKeys="true">
+    insert into game_record_history (game_record_id, live_record_id, room_uuid,
+      game_creator, create_time, update_time, 
+      game_status, game_id, game_name, 
+      game_desc, thumbnail, rule, 
+      room_archive_id)
+    values (#{gameRecordId,jdbcType=BIGINT}, #{liveRecordId,jdbcType=BIGINT}, #{roomUuid,jdbcType=VARCHAR},
+      #{gameCreator,jdbcType=VARCHAR}, #{createTime,jdbcType=TIMESTAMP}, #{updateTime,jdbcType=TIMESTAMP}, 
+      #{gameStatus,jdbcType=TINYINT}, #{gameId,jdbcType=BIGINT}, #{gameName,jdbcType=VARCHAR}, 
+      #{gameDesc,jdbcType=VARCHAR}, #{thumbnail,jdbcType=VARCHAR}, #{rule,jdbcType=VARCHAR}, 
+      #{roomArchiveId,jdbcType=VARCHAR})
+  </insert>
+  <insert id="insertSelective" keyColumn="id" keyProperty="id" parameterType="com.netease.nemo.game.model.po.GameRecordHistory" useGeneratedKeys="true">
+    insert into game_record_history
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="gameRecordId != null">
+        game_record_id,
+      </if>
+      <if test="liveRecordId != null">
+        live_record_id,
+      </if>
+      <if test="roomUuid != null">
+        room_uuid,
+      </if>
+      <if test="gameCreator != null">
+        game_creator,
+      </if>
+      <if test="createTime != null">
+        create_time,
+      </if>
+      <if test="updateTime != null">
+        update_time,
+      </if>
+      <if test="gameStatus != null">
+        game_status,
+      </if>
+      <if test="gameId != null">
+        game_id,
+      </if>
+      <if test="gameName != null">
+        game_name,
+      </if>
+      <if test="gameDesc != null">
+        game_desc,
+      </if>
+      <if test="thumbnail != null">
+        thumbnail,
+      </if>
+      <if test="rule != null">
+        rule,
+      </if>
+      <if test="roomArchiveId != null">
+        room_archive_id,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="gameRecordId != null">
+        #{gameRecordId,jdbcType=BIGINT},
+      </if>
+      <if test="liveRecordId != null">
+        #{liveRecordId,jdbcType=BIGINT},
+      </if>
+      <if test="roomUuid != null">
+        #{roomUuid,jdbcType=VARCHAR},
+      </if>
+      <if test="gameCreator != null">
+        #{gameCreator,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null">
+        #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updateTime != null">
+        #{updateTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="gameStatus != null">
+        #{gameStatus,jdbcType=TINYINT},
+      </if>
+      <if test="gameId != null">
+        #{gameId,jdbcType=BIGINT},
+      </if>
+      <if test="gameName != null">
+        #{gameName,jdbcType=VARCHAR},
+      </if>
+      <if test="gameDesc != null">
+        #{gameDesc,jdbcType=VARCHAR},
+      </if>
+      <if test="thumbnail != null">
+        #{thumbnail,jdbcType=VARCHAR},
+      </if>
+      <if test="rule != null">
+        #{rule,jdbcType=VARCHAR},
+      </if>
+      <if test="roomArchiveId != null">
+        #{roomArchiveId,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.netease.nemo.game.model.po.GameRecordHistory">
+    update game_record_history
+    <set>
+      <if test="gameRecordId != null">
+        game_record_id = #{gameRecordId,jdbcType=BIGINT},
+      </if>
+      <if test="liveRecordId != null">
+        live_record_id = #{liveRecordId,jdbcType=BIGINT},
+      </if>
+      <if test="roomUuid != null">
+        room_uuid = #{roomUuid,jdbcType=VARCHAR},
+      </if>
+      <if test="gameCreator != null">
+        game_creator = #{gameCreator,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null">
+        create_time = #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updateTime != null">
+        update_time = #{updateTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="gameStatus != null">
+        game_status = #{gameStatus,jdbcType=TINYINT},
+      </if>
+      <if test="gameId != null">
+        game_id = #{gameId,jdbcType=BIGINT},
+      </if>
+      <if test="gameName != null">
+        game_name = #{gameName,jdbcType=VARCHAR},
+      </if>
+      <if test="gameDesc != null">
+        game_desc = #{gameDesc,jdbcType=VARCHAR},
+      </if>
+      <if test="thumbnail != null">
+        thumbnail = #{thumbnail,jdbcType=VARCHAR},
+      </if>
+      <if test="rule != null">
+        rule = #{rule,jdbcType=VARCHAR},
+      </if>
+      <if test="roomArchiveId != null">
+        room_archive_id = #{roomArchiveId,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.netease.nemo.game.model.po.GameRecordHistory">
+    update game_record_history
+    set game_record_id = #{gameRecordId,jdbcType=BIGINT},
+      live_record_id = #{liveRecordId,jdbcType=BIGINT},
+      room_uuid = #{roomUuid,jdbcType=VARCHAR},
+      game_creator = #{gameCreator,jdbcType=VARCHAR},
+      create_time = #{createTime,jdbcType=TIMESTAMP},
+      update_time = #{updateTime,jdbcType=TIMESTAMP},
+      game_status = #{gameStatus,jdbcType=TINYINT},
+      game_id = #{gameId,jdbcType=BIGINT},
+      game_name = #{gameName,jdbcType=VARCHAR},
+      game_desc = #{gameDesc,jdbcType=VARCHAR},
+      thumbnail = #{thumbnail,jdbcType=VARCHAR},
+      rule = #{rule,jdbcType=VARCHAR},
+      room_archive_id = #{roomArchiveId,jdbcType=VARCHAR}
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+</mapper>

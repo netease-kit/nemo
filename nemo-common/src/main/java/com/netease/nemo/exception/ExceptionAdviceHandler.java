@@ -3,6 +3,7 @@ package com.netease.nemo.exception;
 import com.google.common.collect.ImmutableMap;
 import com.netease.nemo.code.ErrorCode;
 import com.netease.nemo.result.ResultView;
+import com.netease.nemo.result.SudResultView;
 import com.netease.nemo.util.gson.GsonUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -39,6 +40,15 @@ public class ExceptionAdviceHandler {
 
     @Autowired
     private MessageSource messageSource;
+
+    @ExceptionHandler(SudException.class)
+    @ResponseStatus(value = HttpStatus.OK)
+    @ResponseBody
+    public SudResultView SudExceptionHandler(HttpServletRequest request, SudException e) {
+        log(e.getCode(), request, e);
+        String msg = e.getMsg();
+        return SudResultView.failed(e.getCode(), e.getSudErrorCodeEnum().getCode(), msg);
+    }
 
     @ExceptionHandler(BsException.class)
     @ResponseStatus(value = HttpStatus.OK)

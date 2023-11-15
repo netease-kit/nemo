@@ -243,4 +243,16 @@ public class BaseTest {
         headers.add("deviceId", "2281b35c3a46a4c419406581f04f2b13");
         return headers;
     }
+
+    protected HttpHeaders badHostHeader() {
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("token", "BEHI6ZAWDX83E9SA07QG0NNG111");
+        headers.add("user", "ch");
+        headers.add("appkey", "2281b35c3a46a4c419406581f04f2b13");
+        headers.add("clientType", "web");
+        headers.add("deviceId", "267437774082551");
+        headers.add("authType", "3");
+        return headers;
+    }
+
 }

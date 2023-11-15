@@ -60,6 +60,8 @@ public class LiveResourceUtil {
             "86117790297100288.jpg", "86117790972383232.jpg", "86117791358259200.jpg", "86117791714775040.jpg",
             "86117792046125056.jpg", "86117792889180160.jpg", "86117793388302336.jpg");
 
+    public final static List<String> defaultPicUrlList = Arrays.asList("https://yx-web-nosdn.netease.im/common/8d02910e144c7e37eb506cc3cd594913/Group%202789.png","https://yx-web-nosdn.netease.im/common/bdac99f1db1a90632c39fe5ad8c418e9/Group%202788.png" ,"https://yx-web-nosdn.netease.im/common/7eb7bed6a028d75112664a0934ca4e1c/Group%202794.png","https://yx-web-nosdn.netease.im/common/855b98bd26ce3164b88f70835a2e8983/Group%202795.png");
+
     /**
      * 用户名列表
      */

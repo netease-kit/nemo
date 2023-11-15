@@ -67,4 +67,9 @@ public class CreateLiveParam {
      */
     private Long configId;
 
+    /**
+     * singMode 演唱模式 0:智能合唱 1:串行合唱 2:NTP实时合唱 3:独唱
+     */
+    private Integer singMode;
+
 }

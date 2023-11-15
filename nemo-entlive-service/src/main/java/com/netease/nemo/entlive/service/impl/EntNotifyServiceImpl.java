@@ -1,20 +1,29 @@
 package com.netease.nemo.entlive.service.impl;
 
+import com.netease.nemo.config.YunXinConfigProperties;
 import com.netease.nemo.entlive.dto.LiveRecordDto;
+import com.netease.nemo.entlive.dto.OrderSongResultDto;
 import com.netease.nemo.entlive.enums.LiveEnum;
+import com.netease.nemo.entlive.enums.LiveTypeEnum;
+import com.netease.nemo.entlive.event.GameRoomCloseEvent;
+import com.netease.nemo.entlive.event.GameUserLeaveRoomEvent;
 import com.netease.nemo.entlive.parameter.neroomNotify.*;
 import com.netease.nemo.entlive.service.*;
 import com.netease.nemo.enums.RedisKeyEnum;
 import com.netease.nemo.locker.LockerService;
+import com.netease.nemo.openApi.dto.neroom.UserOffSeatNotifyDto;
+import com.netease.nemo.openApi.dto.neroom.UserOnSeatNotifyDto;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-import static com.netease.nemo.enums.RedisKeyEnum.NE_ROOM_MEMBER_TABLE_KEY;
+import static com.netease.nemo.enums.RedisKeyEnum.*;
 
 @Service
 @Slf4j
@@ -36,7 +45,16 @@ public class EntNotifyServiceImpl implements EntNotifyService {
     private OrderSongService orderSongService;
 
     @Resource
+    private YunXinConfigProperties yunXinConfigProperties;
+
+    @Resource
     private MusicPlayService musicPlayService;
+
+    @Resource
+    private SingService singService;
+
+    @Resource
+    private ApplicationEventPublisher publisher;
 
 
     @Override
@@ -65,6 +83,17 @@ public class EntNotifyServiceImpl implements EntNotifyService {
                     musicPlayService.cleanPlayerMusicInfo(liveRecordId);
                     // 清空点歌数据
                     orderSongService.cleanOrderSongs(liveRecordId);
+
+                    // 清空房间演唱信息
+                    if (LiveTypeEnum.isKTVLive(liveRecordDto.getLiveType())) {
+                        singService.cleanSingInfo(liveRecordDto.getRoomUuid());
+                    }
+
+                    // 游戏房发送房间结束通知
+                    if (LiveTypeEnum.isGameLive(liveRecordDto.getLiveType())) {
+                        GameRoomCloseEvent gameRoomCloseTask = new GameRoomCloseEvent(liveRecordDto.getRoomUuid());
+                        publisher.publishEvent(gameRoomCloseTask);
+                    }
                 },
                 RedisKeyEnum.ENT_CREATE_LIVE_ROOM_LOCK_KEY, liveRecordId);
     }
@@ -114,6 +143,69 @@ public class EntNotifyServiceImpl implements EntNotifyService {
                         () -> entLiveService.closeLiveRoom(o.getUserUuid(), liveRecordId),
                         RedisKeyEnum.ENT_LIVE_ROOM_LOCK_KEY, liveRecordId);
             }
+
+            // KTV场景下删除用户点歌
+            if (LiveTypeEnum.isKTVLive(liveRecordDto.getLiveType())) {
+                lockerService.tryLockAndDo(
+                        () -> {
+                            List<OrderSongResultDto> oldOrderSongs = orderSongService.getOrderSongs(liveRecordId);
+                            orderSongService.cleanUserOrderSongs(liveRecordId, o.getUserUuid());
+                            singService.endSingWhenMemberOut(liveRecordDto.getRoomUuid(), o.getUserUuid(), oldOrderSongs);
+                        },
+                        RedisKeyEnum.ENT_SONG_ORDER.getKeyPrefix(), liveRecordId);
+            }
+
+            if (LiveTypeEnum.isGameLive(liveRecordDto.getLiveType())) {
+                GameUserLeaveRoomEvent gameUserLeaveRoomTask = GameUserLeaveRoomEvent.builder().userUuid(o.getUserUuid()).roomUuid(param.getRoomUuid()).build();
+                // 通知游戏用户离开房间
+                publisher.publishEvent(gameUserLeaveRoomTask);
+            }
         });
+    }
+
+
+    @Override
+    public void handlerUserOnSeat(UserOnSeatNotifyDto param) {
+        LiveRecordDto liveRecordDto = liveRecordService.getLiveRecordByRoomArchiveId(param.getRoomArchiveId());
+        if (liveRecordDto == null) {
+            log.info("LiveRecord is valid");
+            return;
+        }
+
+        String neRoomMemberTableKey = NE_ROOM_SEAT_USER_TABLE_KEY.getKeyPrefix() + param.getRoomArchiveId();
+        Integer index = param.getIndex();
+
+        nemoRedisTemplate.opsForHash().put(neRoomMemberTableKey, index, param.getUser());
+    }
+
+    @Override
+    public void handlerUserOffSeat(UserOffSeatNotifyDto param) {
+        String neRoomMemberTableKey = NE_ROOM_SEAT_USER_TABLE_KEY.getKeyPrefix() + param.getRoomArchiveId();
+        Integer index = param.getIndex();
+        String userUuid = param.getUserUuid();
+
+        // 删除redis中麦位数据
+        nemoRedisTemplate.opsForHash().delete(neRoomMemberTableKey, index);
+
+        LiveRecordDto liveRecordDto = liveRecordService.getLiveRecordByRoomArchiveId(param.getRoomArchiveId());
+        if (liveRecordDto == null) {
+            log.info("LiveRecord is valid");
+            return;
+        }
+
+        Long liveRecordId = liveRecordDto.getId();
+        String roomUuid = liveRecordDto.getRoomUuid();
+        if (LiveTypeEnum.isKTVLive(liveRecordDto.getLiveType())) {
+            try {
+                //ktv场景清空用户已点歌曲
+                lockerService.tryLockAndDo(() -> {
+                    List<OrderSongResultDto> oldOrderSongs = orderSongService.getOrderSongs(liveRecordId);
+                    orderSongService.cleanUserOrderSongs(liveRecordId, userUuid);
+                    singService.endSingWhenMemberOut(roomUuid, userUuid, oldOrderSongs);
+                }, ENT_KTV_SING_LOCKER_KEY.getKeyPrefix(), yunXinConfigProperties.getAppKey(), roomUuid);
+            } catch (Exception e) {
+                log.info("ktv member offSeat error, roomUuid:{}, userUuid:{}", roomUuid, userUuid);
+            }
+        }
     }
 }

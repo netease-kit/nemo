@@ -3,19 +3,14 @@ package com.netease.nemo.entlive.service.impl;
 import com.netease.nemo.code.ErrorCode;
 import com.netease.nemo.dto.EventDto;
 import com.netease.nemo.dto.UserDto;
-import com.netease.nemo.entlive.dto.BasicUserDto;
-import com.netease.nemo.entlive.dto.LiveRecordDto;
-import com.netease.nemo.entlive.dto.OrderSongDto;
-import com.netease.nemo.entlive.dto.OrderSongResultDto;
+import com.netease.nemo.entlive.dto.*;
 import com.netease.nemo.entlive.dto.message.OrderSongNotifyEventDto;
+import com.netease.nemo.entlive.enums.KtvSingStatusEnum;
 import com.netease.nemo.entlive.enums.LiveEnum;
 import com.netease.nemo.entlive.enums.LiveTypeEnum;
 import com.netease.nemo.entlive.enums.OrderSongStatusEnum;
 import com.netease.nemo.entlive.model.po.OrderSong;
-import com.netease.nemo.entlive.service.LiveRecordService;
-import com.netease.nemo.entlive.service.MusicPlayService;
-import com.netease.nemo.entlive.service.NeRoomMemberService;
-import com.netease.nemo.entlive.service.OrderSongService;
+import com.netease.nemo.entlive.service.*;
 import com.netease.nemo.entlive.wrapper.OrderSongMapperWrapper;
 import com.netease.nemo.enums.EventTypeEnum;
 import com.netease.nemo.exception.BsException;
@@ -65,8 +60,14 @@ public class OrderSongServiceImpl implements OrderSongService {
     @Resource
     private NeRoomMemberService neRoomMemberService;
 
+    @Resource
+    private SingService singService;
+
     @Value("${business.roomOrderSongLimit:20}")
     private Integer roomOrderSongLimit;
+
+    @Value("${business.ktvRoomOrderSongLimit:10}")
+    private Integer ktvRoomOrderSongLimit;
 
     @Value("${business.userOrderSongLimit:2}")
     private Integer userOrderSongLimit;
@@ -92,12 +93,16 @@ public class OrderSongServiceImpl implements OrderSongService {
         String roomUuid = liveRecordDto.getRoomUuid();
 
         if (LiveTypeEnum.CHAT.getType() == liveRecordDto.getLiveType()
-                && !liveRecordDto.getUserUuid().equals(orderSongDto.getUserUuid())) {
+                && !liveRecordDto.getUserUuid().equals(userUuid)) {
             throw new BsException(ErrorCode.FORBIDDEN, "非主播不能点歌");
         }
-
+        boolean isFirstOrder = isFirstOrder(liveRecordId);
         // 校验点歌数量及权限
-        checkOrderSong(liveRecordId, roomArchiveId, userUuid, orderSongDto.getSongId());
+        if (LiveTypeEnum.isKTVLive(liveRecordDto.getLiveType())) {
+            checkOrderSongForKtv(liveRecordId, roomArchiveId, userUuid, orderSongDto.getSongId());
+        } else {
+            checkOrderSong(liveRecordId, roomArchiveId, userUuid, orderSongDto.getSongId());
+        }
 
         UserDto orderSongUser = userService.getUser(userUuid);
         orderSongDto.setRoomArchiveId(roomArchiveId);
@@ -119,8 +124,13 @@ public class OrderSongServiceImpl implements OrderSongService {
 
         // 发送点歌事件
         sendNotifyMsg(roomUuid, EventTypeEnum.ENT_USER_ORDER_SONG.getType(), orderSongNotify);
-        // 发送点歌事件
+        // 发送点歌队列变化事件
         sendOrderSongChangeNotifyMsg(roomUuid, null);
+
+        // ktv模式下，首次点歌时直接播放该歌曲
+        if (LiveTypeEnum.KTV.getType() == liveRecordDto.getLiveType() && isFirstOrder) {
+            singService.playNextSongMsg(userUuid, roomUuid, orderSongResultDto);
+        }
 
         return orderSongResultDto;
     }
@@ -144,6 +154,35 @@ public class OrderSongServiceImpl implements OrderSongService {
         }
     }
 
+    private void checkOrderSongForKtv(Long liveRecordId, String roomArchiveId, String userUuid, String songId) {
+        if (!neRoomMemberService.userInNeRoom(roomArchiveId, userUuid)) {
+            throw new BsException(ErrorCode.USER_NOT_IN_ROOM, "用户未加入房间");
+        }
+        if (!neRoomMemberService.isUserOnSeat(roomArchiveId, userUuid)) {
+            throw new BsException(ErrorCode.FORBIDDEN, "用户不在麦上");
+        }
+        List<OrderSong> orderSongs = orderSongMapperWrapper.selectByLiveRecordIdAndUserIdForKtv(liveRecordId, userUuid);
+        if (!CollectionUtils.isEmpty(orderSongs)) {
+            boolean isAlreadyOrder = orderSongs.stream().anyMatch(o -> (o.getSongId().equals(songId) && OrderSongStatusEnum.effectiveOrderSongForKtv(o.getStatus())));
+            if (isAlreadyOrder) {
+                throw new BsException(ErrorCode.SONG_IS_ALREADY_ORDER, "The song " + songId + " is already order");
+            }
+            if (orderSongs.size() >= userOrderSongLimit) {
+                throw new BsException(ErrorCode.USER_ORDER_SONG_EXCEED_LIMIT);
+            }
+        }
+
+        int roomOrderSongCount = orderSongMapperWrapper.selectOrderSongCountForKtv(liveRecordId);
+        if (roomOrderSongCount >= ktvRoomOrderSongLimit) {
+            throw new BsException(ErrorCode.ROOM_ORDER_SONG_EXCEED_LIMIT);
+        }
+    }
+
+    private boolean isFirstOrder(Long liveRecordId) {
+        List<OrderSong> orderSongs = orderSongMapperWrapper.selectByLiveRecordIdForKtv(liveRecordId);
+        return CollectionUtils.isEmpty(orderSongs);
+    }
+
     @Override
     @Transactional
     public void songSetTop(Long liveRecordId, String operator, Long orderId) {
@@ -153,9 +192,8 @@ public class OrderSongServiceImpl implements OrderSongService {
         String roomUuid = liveRecordDto.getRoomUuid();
         String userUuid = orderSong.getUserUuid();
 
-        if (!operator.equals(userUuid) && !operator.equals(liveRecordDto.getUserUuid())) {
-            throw new BsException(ErrorCode.FORBIDDEN, "无权限");
-        }
+        checkOperatorPermission(operator, liveRecordDto, userUuid);
+
         if (!neRoomMemberService.userInNeRoom(orderSong.getRoomArchiveId(), operator)) {
             throw new BsException(ErrorCode.USER_NOT_IN_ROOM, "用户未加入房间");
         }
@@ -195,9 +233,12 @@ public class OrderSongServiceImpl implements OrderSongService {
         String roomUuid = liveRecordDto.getRoomUuid();
         String userUuid = orderSong.getUserUuid();
 
-        if (LiveTypeEnum.CHAT.getType() == liveRecordDto.getLiveType()) {
-            if (!operator.equals(userUuid) && !operator.equals(liveRecordDto.getUserUuid())) {
-                throw new BsException(ErrorCode.FORBIDDEN, "无权限");
+        checkOperatorPermission(operator, liveRecordDto, userUuid);
+
+        if (LiveTypeEnum.isKTVLive(liveRecordDto.getLiveType())) {
+            SingDetailInfoDto singDetailInfoDto = singService.getSingInfo(liveRecordDto.getRoomUuid());
+            if (singDetailInfoDto != null && (singDetailInfoDto.getOrderId().equals(orderId) && KtvSingStatusEnum.PLAY.getStatus() == singDetailInfoDto.getSongStatus())) {
+                throw new BsException(ErrorCode.FORBIDDEN, "当前歌曲正在演唱中，不可被取消");
             }
         }
 
@@ -237,6 +278,14 @@ public class OrderSongServiceImpl implements OrderSongService {
         sendOrderSongChangeNotifyMsg(roomUuid, null);
     }
 
+    private void checkOperatorPermission(String operator, LiveRecordDto liveRecordDto, String userUuid) {
+        if (LiveTypeEnum.isChatLive(liveRecordDto.getLiveType()) || LiveTypeEnum.isKTVLive(liveRecordDto.getLiveType())) {
+            if (!operator.equals(userUuid) && !operator.equals(liveRecordDto.getUserUuid())) {
+                throw new BsException(ErrorCode.FORBIDDEN, "无权限");
+            }
+        }
+    }
+
     @Override
     @Transactional
     public void orderSongSwitch(Long liveRecordId, String operator, Long orderId, String attachment) {
@@ -246,17 +295,17 @@ public class OrderSongServiceImpl implements OrderSongService {
         String roomUuid = liveRecordDto.getRoomUuid();
         String userUuid = orderSong.getUserUuid();
 
-        if (LiveTypeEnum.CHAT.getType() == liveRecordDto.getLiveType()) {
-            if (!operator.equals(userUuid) && !operator.equals(liveRecordDto.getUserUuid())) {
-                throw new BsException(ErrorCode.FORBIDDEN, "无权限");
-            }
-        }
+        checkOperatorPermission(operator, liveRecordDto, userUuid);
 
         if (!neRoomMemberService.userInNeRoom(orderSong.getRoomArchiveId(), operator)) {
             throw new BsException(ErrorCode.USER_NOT_IN_ROOM, "用户未加入房间");
         }
         if (OrderSongStatusEnum.CANCEL.getCode() == orderSong.getStatus()) {
             throw new BsException(ErrorCode.ORDER_SONG_HAS_CANCELLED, "The Song Has Been Cancelled");
+        }
+
+        if(LiveTypeEnum.isKTVLive(liveRecordDto.getLiveType()) && OrderSongStatusEnum.PLAYING.getCode() != orderSong.getStatus()) {
+            throw new BsException(ErrorCode.FORBIDDEN, "当前歌曲不在演唱中，不可被切歌");
         }
 
         // 标记为已唱
@@ -292,11 +341,23 @@ public class OrderSongServiceImpl implements OrderSongService {
 
         // 发送点歌对列变化事件
         sendOrderSongChangeNotifyMsg(roomUuid, null);
+
+        // KTV切歌
+        if (LiveTypeEnum.isKTVLive(liveRecordDto.getLiveType())) {
+            singService.endSingWhenSongSwitch(roomUuid, operator, orderId);
+        }
     }
 
     @Override
     public List<OrderSongResultDto> getOrderSongs(Long liveRecordId) {
-        List<OrderSong> orderSongs = orderSongMapperWrapper.selectByLiveRecordId(liveRecordId);
+        List<OrderSong> orderSongs;
+        LiveRecordDto liveRecordDto = getLiveRecordDto(liveRecordId);
+        if (LiveTypeEnum.isKTVLive(liveRecordDto.getLiveType())) {
+            orderSongs = orderSongMapperWrapper.selectByLiveRecordIdForKtv(liveRecordId);
+        } else {
+            orderSongs = orderSongMapperWrapper.selectByLiveRecordId(liveRecordId);
+
+        }
         return orderSongs.stream().map(o -> {
             UserDto userDto = userService.getUser(o.getUserUuid());
             return OrderSongResultDto.build(o, userDto);
@@ -319,8 +380,25 @@ public class OrderSongServiceImpl implements OrderSongService {
 
     @Override
     public void cleanUserOrderSongs(Long liveRecordId, String userUuid) {
-        orderSongMapperWrapper.cleanOrderSongsByUserUuid(liveRecordId, userUuid);
+        LiveRecordDto liveRecordDto = liveRecordService.getLiveRecord(liveRecordId);
+        boolean isLiving = liveRecordDto != null && LiveEnum.isLive(liveRecordDto.getLive());
+        int res = orderSongMapperWrapper.cleanOrderSongsByUserUuid(liveRecordId, userUuid);
+        if (res > 0 && isLiving) {
+            // 发送点歌队列变化事件
+            sendOrderSongChangeNotifyMsg(liveRecordDto.getRoomUuid(), null);
+        }
     }
+
+    public OrderSong getAndCheckKtvOrderSong(String operator, Long orderId) {
+        OrderSong orderSong = orderSongMapperWrapper.selectByPrimaryKey(orderId);
+        if (orderSong == null || !OrderSongStatusEnum.effectiveOrderSongForKtv(orderSong.getStatus())) {
+            throw new BsException(ErrorCode.ORDER_SONG_NOT_EXISTS);
+        }
+        // 检查操作人是否为点歌人
+        if (!operator.equals(orderSong.getUserUuid())) {
+            throw new BsException(ErrorCode.FORBIDDEN);
+        }
+        return orderSong;    }
 
 
     /**

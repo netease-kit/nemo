@@ -8,7 +8,9 @@ public enum LiveTypeEnum {
     CHAT(2, "语聊房"),
     KTV(3, "KTV房间"),
     INTERACTION_LIVE_CROSS_CHANNEL(4, "跨频道转发-互动直播"),
-    LISTEN_TOGETHER(5,"一起听"),;
+    LISTEN_TOGETHER(5, "一起听"),
+    GAME_ROOM(6, "游戏房"),
+    ;
 
     /**
      * 类型
@@ -26,7 +28,7 @@ public enum LiveTypeEnum {
     }
 
     public static boolean checkType(Integer type) {
-        if(null == type) {
+        if (null == type) {
             return false;
         }
         for (LiveTypeEnum value : LiveTypeEnum.values()) {
@@ -38,9 +40,30 @@ public enum LiveTypeEnum {
     }
 
     public static boolean isPkLive(Integer type) {
-        if(null == type) {
+        if (null == type) {
             return false;
         }
         return INTERACTION_LIVE.getType() == type || INTERACTION_LIVE_CROSS_CHANNEL.getType() == type;
+    }
+
+    public static boolean isKTVLive(Integer type) {
+        if(null == type) {
+            return false;
+        }
+        return KTV.getType() == type;
+    }
+
+    public static boolean isChatLive(Integer type) {
+        if(null == type) {
+            return false;
+        }
+        return CHAT.getType() == type;
+    }
+
+    public static boolean isGameLive(Integer type) {
+        if(null == type) {
+            return false;
+        }
+        return GAME_ROOM.getType() == type;
     }
 }

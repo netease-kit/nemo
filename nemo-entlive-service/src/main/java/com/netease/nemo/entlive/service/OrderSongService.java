@@ -88,4 +88,13 @@ public interface OrderSongService {
      * @param userUuid 观众
      */
     void cleanUserOrderSongs(Long liveRecordId, String userUuid);
+
+    /**
+     * 获取并校验KTV点歌信息
+     *
+     * @param operator operator
+     * @param orderId  orderId
+     * @return OrderSong
+     */
+    OrderSong getAndCheckKtvOrderSong(String operator, Long orderId);
 }

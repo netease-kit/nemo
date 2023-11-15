@@ -1,9 +1,6 @@
 package com.netease.nemo.entlive.enums;
 
 
-import com.netease.nemo.code.ErrorCode;
-import com.netease.nemo.exception.BsException;
-
 public enum RoomProfileEnum {
 
     COMMUNICATION(0), //通话场景
@@ -33,6 +30,6 @@ public enum RoomProfileEnum {
                 return value;
             }
         }
-        return  null;
+       return null;
     }
 }

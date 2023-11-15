@@ -27,6 +27,13 @@ public enum OrderSongStatusEnum {
         return CANCEL.getCode() != code;
     }
 
+    public static boolean effectiveOrderSongForKtv(Integer code) {
+        if(null == code) {
+            return false;
+        }
+        return WAITING.getCode() == code || PLAYING.getCode() == code;
+    }
+
 
     public int getCode() {
         return code;
