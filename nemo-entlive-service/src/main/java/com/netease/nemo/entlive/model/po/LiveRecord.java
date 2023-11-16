@@ -76,6 +76,11 @@ public class LiveRecord {
 
     private String liveConfig;
 
+    /**
+     * singMode 演唱模式 0:智能合唱 1:串行合唱 2:NTP实时合唱 3:独唱
+     */
+    private Integer singMode;
+
 
     public LiveRecord() {
     }
@@ -110,6 +115,9 @@ public class LiveRecord {
         liveRecord.setLive(LiveEnum.NOT_START.getCode());
         liveRecord.setUserUuid(userUuid);
         liveRecord.setRoomName(param.getRoomName());
+        if(null != param.getSingMode()){
+            liveRecord.setSingMode(param.getSingMode());
+        }
         return liveRecord;
     }
 
@@ -217,4 +225,11 @@ public class LiveRecord {
         this.liveConfig = liveConfig;
     }
 
+    public Integer getSingMode() {
+        return singMode;
+    }
+
+    public void setSingMode(Integer singMode) {
+        this.singMode = singMode;
+    }
 }

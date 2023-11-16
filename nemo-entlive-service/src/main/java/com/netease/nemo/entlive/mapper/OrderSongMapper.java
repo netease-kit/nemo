@@ -22,13 +22,19 @@ public interface OrderSongMapper {
 
     List<OrderSong> selectByLiveRecordId(@Param("liveRecordId") Long liveRecordId);
 
+    List<OrderSong> selectByLiveRecordIdForKtv(@Param("liveRecordId") Long liveRecordId);
+
     List<OrderSong> selectByLiveRecordIdAndUserId(@Param("liveRecordId") Long liveRecordId, @Param("userUuid") String userUuid);
+
+    List<OrderSong> selectByLiveRecordIdAndUserIdForKtv(@Param("liveRecordId") Long liveRecordId, @Param("userUuid") String userUuid);
 
     int cleanOrderSongs(@Param("liveRecordId") Long liveRecordId);
 
-    void cleanOrderSongsByUserUuid(@Param("liveRecordId") Long liveRecordId, @Param("userUuid") String userUuid);
+    int cleanOrderSongsByUserUuid(@Param("liveRecordId") Long liveRecordId, @Param("userUuid") String userUuid);
 
     int selectOrderSongCount(@Param("liveRecordId") Long liveRecordId);
 
     int selectUserOrderSongCount(@Param("liveRecordId") Long liveRecordId,  @Param("userUuid") String userUuid);
+
+    int selectOrderSongCountForKtv(@Param("liveRecordId") Long liveRecordId);
 }

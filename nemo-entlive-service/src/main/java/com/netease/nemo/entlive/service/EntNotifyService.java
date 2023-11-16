@@ -4,6 +4,8 @@ import com.netease.nemo.entlive.parameter.neroomNotify.CloseRoomEventNotify;
 import com.netease.nemo.entlive.parameter.neroomNotify.CreateRoomEventNotify;
 import com.netease.nemo.entlive.parameter.neroomNotify.JoinRoomEventNotify;
 import com.netease.nemo.entlive.parameter.neroomNotify.LeaveRoomEventNotify;
+import com.netease.nemo.openApi.dto.neroom.UserOffSeatNotifyDto;
+import com.netease.nemo.openApi.dto.neroom.UserOnSeatNotifyDto;
 
 /**
  * 娱乐直播房间——neRoom抄送处理
@@ -20,4 +22,8 @@ public interface EntNotifyService {
     void handlerUserJoinRoom(JoinRoomEventNotify param);
 
     void handlerUserLeaveRoom(LeaveRoomEventNotify param);
+
+    void handlerUserOnSeat(UserOnSeatNotifyDto param);
+
+    void handlerUserOffSeat( UserOffSeatNotifyDto param);
 }

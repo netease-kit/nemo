@@ -16,6 +16,7 @@
         <module>nemo-controller</module>
         <module>nemo-entlive-service</module>
         <module>nemo-redis-delay-queue</module>
+        <module>nemo-game</module>
     </modules>
 
     <parent>
@@ -66,6 +67,11 @@
             <dependency>
                 <groupId>com.netease</groupId>
                 <artifactId>nemo-redis-delay-queue</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.netease</groupId>
+                <artifactId>nemo-game</artifactId>
                 <version>${project.version}</version>
             </dependency>
         </dependencies>

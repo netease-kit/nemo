@@ -131,5 +131,27 @@ public class ErrorCode {
      * 实名认证不通过
      */
     public static final int REAL_NAME_AUTH_FAIL = 2002;
+
+
+    /*
+     * ktv错误码段，4000~4200
+     */
+    public static final int SING_INFO_EMPTY = 4000;
+    public static final int CHORUS_RECORD_NOT_EXIST = 4001;
+    public static final int CHORUS_NOT_READY = 4002;
+    /**
+     * 正在演唱中
+     */
+    public static final int SING_PROCESSING = 4003;
+
+    public static final int SING_ALREADY_PAUSE = 4004;
+    public static final int SING_ALREADY_PLAY = 4005;
+    public static final int SING_ALREADY_END = 4006;
+    public static final int CHORUS_NOT_AGREE = 4007;
+
+    /**
+     * 游戏记录不存在
+     */
+    public static final int GAME_RECORD_NOT_EXIST = 3000;
 }
 

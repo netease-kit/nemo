@@ -6,6 +6,9 @@ services:
     environment:
       APPKEY: ${APPKEY} # 添加云信appkey
       APPSECRET: ${APPSECRET} # 添加云信APPSECRET
+      SUD_APPID: ${SUD_APPID} # 忽然游戏appId
+      SUD_APPKEY: ${SUD_APPKEY} # 忽然游戏appKey
+      SUD_APPSECRET: ${SUD_APPSECRET} # 忽然游戏APPSECRET
     volumes:
       - ./data/nemoService/:/data
     networks:

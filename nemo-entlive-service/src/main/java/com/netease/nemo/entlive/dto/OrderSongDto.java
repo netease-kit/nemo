@@ -50,6 +50,11 @@ public class OrderSongDto {
     private String singer;
 
     /**
+     * 歌手封面
+     */
+    private String singerCover;;
+
+    /**
      * 歌曲时长
      */
     private long songTime;

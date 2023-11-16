@@ -29,6 +29,11 @@ public class LiveDto extends LiveRecordDto {
     private Long onSeatCount;
 
     /**
+     * 房间正在玩的游戏名称
+     */
+    private String gameName;
+
+    /**
      * 直播配置
      */
     private CreateNeRoomParam.ExternalLiveConfig externalLiveConfig;

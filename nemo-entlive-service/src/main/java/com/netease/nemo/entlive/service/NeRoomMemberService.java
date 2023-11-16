@@ -1,6 +1,7 @@
 package com.netease.nemo.entlive.service;
 
 import com.netease.nemo.entlive.parameter.neroomNotify.RoomMember;
+import com.netease.nemo.openApi.dto.neroom.NeRoomSeatDto;
 
 import java.util.List;
 
@@ -42,5 +43,21 @@ public interface NeRoomMemberService {
      * @param userUuid 用户 userUuid编号
      * @return ture of false
      */
-    boolean userInNeRoom(String roomArchiveId,String userUuid);
+    boolean userInNeRoom(String roomArchiveId, String userUuid);
+
+    /**
+     * 判断用户是否在NeRoom中麦位上
+     * @param roomArchiveId
+     * @param userUuid
+     * @return
+     */
+    boolean isUserOnSeat(String roomArchiveId, String userUuid);
+
+    /**
+     * 获取房间座位信息
+     *
+     * @param roomArchiveId roomArchiveId
+     * @return List<NeRoomSeatDto>
+     */
+    List<NeRoomSeatDto> getSeatList( String roomArchiveId);
 }

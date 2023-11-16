@@ -8,6 +8,8 @@ public enum NeRoomNotifyEnum {
     CLOSE_ROOM("CLOSE_ROOM", "NeRoom房间关闭"),
     USER_JOIN_ROOM("USER_JOIN_ROOM", "加入NeRoom房间"),
     USER_LEAVE_ROOM("USER_LEAVE_ROOM", "离开NeRoom房间"),
+    USER_ON_SEAT("USER_ON_SEAT", "用户上麦"),
+    USER_OFF_SEAT("USER_OFF_SEAT", "用户下麦"),
     ;
 
     /**

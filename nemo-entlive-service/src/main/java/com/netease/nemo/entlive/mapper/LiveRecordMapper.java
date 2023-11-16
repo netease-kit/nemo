@@ -27,5 +27,7 @@ public interface LiveRecordMapper {
 
     LiveRecord selectByUserUuid(@Param("userUuid") String userUuid);
 
+    LiveRecord selectByRoomUuid(@Param("roomUuid") String roomUuid);
+
     List<LiveRecord> getLivingRecords(@Param("liveType") Integer liveType, int live, String excludeUserUuid);
 }

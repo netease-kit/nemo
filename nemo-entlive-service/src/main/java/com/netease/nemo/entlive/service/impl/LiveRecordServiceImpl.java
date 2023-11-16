@@ -72,6 +72,15 @@ public class LiveRecordServiceImpl implements LiveRecordService {
     }
 
     @Override
+    public LiveRecordDto getLivingRecordByRoomUuid(String roomUuid) {
+        LiveRecord liveRecord = liveRecordWrapper.selectByRoomUuid(roomUuid);
+        if(liveRecord == null || !LiveEnum.isLive(liveRecord.getLive())) {
+            throw new BsException(ErrorCode.ANCHOR_NOT_LIVING);
+        }
+        return modelMapper.map(liveRecord, LiveRecordDto.class);
+    }
+
+    @Override
     public LiveRecordDto getLiveRecordByUserUuid(String userUuid) {
         if(StringUtils.isEmpty(userUuid)) {
             return null;

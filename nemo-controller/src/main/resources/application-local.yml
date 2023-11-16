@@ -14,12 +14,12 @@ spring:
       maximum-pool-size: 100
       max-lifetime: 900000
     type: com.zaxxer.hikari.HikariDataSource
-    url: jdbc:mysql://mysql:3306/nemo?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai
-    username: 'nemo'
-    password: '123456'
+    url: jdbc:mysql://127.0.0.1:3306/nemo?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai
+    username: 'root'
+    password: '12345678'
   redis:
     database: 0
-    host: redis
+    host: 127.0.0.1
     port: 6379  #可不配，因为底层默认值为6379
     pool:
       max-active: 100 #连接池最大连接数（负值表示没有限制）
@@ -32,19 +32,27 @@ yunxin:
   origin:
     appKey: ${APPKEY} # 云信appkey,如果需要申请应用可联系商务
     appSecret: ${APPSECRET} # 云信appSecret
-    nimHost: https://api.netease.im  # 云信IM服务地址
-    neLiveHost: http://vcloud.163.com # 云信直播服务地址
-    neRoomHost: https://roomkit.netease.im/ # 云信Neroom服务地址
-    securityAuditHost: https://logic-dev.netease.im/ # 云信安全通服务地址
-    rtcHost: https://logic-dev.netease.im/ # 云信RTC服务地址
+    nimHost: https://api.netease.im
+    neLiveHost: http://vcloud.163.com
+    neRoomHost: https://roomkit-dev.netease.im/
+    securityAuditHost: https://logic-dev.netease.im/
+    rtcHost: https://logic-dev.netease.im/
 business:
   yunxinAssistAccid: yunxinassistaccid_1 #云信派对小助手
   systemAccid: nimsystembot_1  #服务端系统Nim账号
   1v1RtcRoomLiveTime: 10 # 单位（分钟） 1v1RTC房间存活时间，demo默认10分钟回收房间
-  voiceRoomConfigId: 569 # 语聊房模板
-  listenTogetherConfigId: 570 # 一起听歌模板
-  pkConfigId: 22 # PK直播模板
+  voiceRoomConfigId: 76 # 语聊房模板
+  gameRoomConfigId: 1099 # 游戏房模板
+  listenTogetherConfigId: 79 # 一起听歌模板
   ktvConfigId: 72 # KTV模板
-
+  pkConfigId: 22 # PK直播模板
+  roomOrderSongLimit: 20 # 房间可点歌总数量
+  userOrderSongLimit: 2 # 房间内单个用户可点歌数量
+  game:
+    sudUrl: https://sim-asc.sudden.ltd/
+    appId:  ${SUD_APPID}
+    appKey:  ${SUD_APPKEY}
+    appSecret:  ${SUD_APPSECRET}
+    onlineGames: 1461228410184400899
 server:
   port: 9981

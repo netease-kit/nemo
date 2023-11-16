@@ -30,6 +30,7 @@ public class LiveRecordWrapper {
             @CacheEvict(key = "'id_'.concat(#record.id)"),
             @CacheEvict(condition = "#record.userUuid != null", key = "'userUuid_'.concat(#record.userUuid)"),
             @CacheEvict(condition = "#record.roomArchiveId != null", key = "'roomArchiveId_'.concat(#record.roomArchiveId)"),
+            @CacheEvict(condition = "#record.roomUuid != null", key = "'roomUuid_'.concat(#record.roomUuid)"),
             @CacheEvict(condition = "#record.userUuid != null &&  #record.liveType != null", key = "'userUuid_'.concat(#record.userUuid).concat('liveType_').concat(#record.liveType)"),
     })
     public int insert(LiveRecord record) {
@@ -40,6 +41,7 @@ public class LiveRecordWrapper {
             @CacheEvict(key = "'id_'.concat(#record.id)"),
             @CacheEvict(condition = "#record.userUuid != null", key = "'userUuid_'.concat(#record.userUuid)"),
             @CacheEvict(condition = "#record.roomArchiveId != null", key = "'roomArchiveId_'.concat(#record.roomArchiveId)"),
+            @CacheEvict(condition = "#record.roomUuid != null", key = "'roomUuid_'.concat(#record.roomUuid)"),
             @CacheEvict(condition = "#record.userUuid != null &&  #record.liveType != null", key = "'userUuid_'.concat(#record.userUuid).concat('liveType_').concat(#record.liveType)"),
     })
     public int insertSelective(LiveRecord record) {
@@ -55,6 +57,7 @@ public class LiveRecordWrapper {
             @CacheEvict(key = "'id_'.concat(#record.id)"),
             @CacheEvict(condition = "#record.userUuid != null", key = "'userUuid_'.concat(#record.userUuid)"),
             @CacheEvict(condition = "#record.roomArchiveId != null", key = "'roomArchiveId_'.concat(#record.roomArchiveId)"),
+            @CacheEvict(condition = "#record.roomUuid != null", key = "'roomUuid_'.concat(#record.roomUuid)"),
             @CacheEvict(condition = "#record.userUuid != null &&  #record.liveType != null", key = "'userUuid_'.concat(#record.userUuid).concat('liveType_').concat(#record.liveType)"),
     })
     public int updateByPrimaryKeySelective(LiveRecord record) {
@@ -65,6 +68,7 @@ public class LiveRecordWrapper {
             @CacheEvict(key = "'id_'.concat(#record.id)"),
             @CacheEvict(condition = "#record.userUuid != null", key = "'userUuid_'.concat(#record.userUuid)"),
             @CacheEvict(condition = "#record.roomArchiveId != null", key = "'roomArchiveId_'.concat(#record.roomArchiveId)"),
+            @CacheEvict(condition = "#record.roomUuid != null", key = "'roomUuid_'.concat(#record.roomUuid)"),
             @CacheEvict(condition = "#record.userUuid != null &&  #record.liveType != null", key = "'userUuid_'.concat(#record.userUuid).concat('liveType_').concat(#record.liveType)"),
     })
     public int updateByPrimaryKey(LiveRecord record) {
@@ -84,5 +88,10 @@ public class LiveRecordWrapper {
     @Cacheable(key = "'userUuid_' + #userUuid", unless = "#result == null")
     public LiveRecord selectByUserUuid(String userUuid) {
         return liveRecordMapper.selectByUserUuid(userUuid);
+    }
+
+    @Cacheable(key = "'roomUuid_' + #roomUuid", unless = "#result == null")
+    public LiveRecord selectByRoomUuid(String roomUuid) {
+        return liveRecordMapper.selectByRoomUuid(roomUuid);
     }
 }

@@ -9,6 +9,8 @@ import com.netease.nemo.entlive.parameter.neroomNotify.LeaveRoomEventNotify;
 import com.netease.nemo.entlive.service.EntNotifyService;
 import com.netease.nemo.enums.NeRoomNotifyEnum;
 import com.netease.nemo.exception.BsException;
+import com.netease.nemo.openApi.dto.neroom.UserOffSeatNotifyDto;
+import com.netease.nemo.openApi.dto.neroom.UserOnSeatNotifyDto;
 import com.netease.nemo.service.NotifyService;
 import com.netease.nemo.util.gson.GsonUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -62,6 +64,16 @@ public class NeRoomNotifyServiceImpl implements NotifyService {
                 case USER_LEAVE_ROOM: {
                     LeaveRoomEventNotify param = GsonUtil.fromJson(data, LeaveRoomEventNotify.class);
                     entNotifyService.handlerUserLeaveRoom(param);
+                    break;
+                }
+                case USER_ON_SEAT: {
+                    UserOnSeatNotifyDto param = GsonUtil.fromJson(data, UserOnSeatNotifyDto.class);
+                    entNotifyService.handlerUserOnSeat(param);
+                    break;
+                }
+                case USER_OFF_SEAT: {
+                    UserOffSeatNotifyDto param = GsonUtil.fromJson(data, UserOffSeatNotifyDto.class);
+                    entNotifyService.handlerUserOffSeat(param);
                     break;
                 }
                 default:

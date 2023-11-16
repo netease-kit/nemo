@@ -1,0 +1,219 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.netease.nemo.entlive.mapper.ChorusRecordMapper">
+    <resultMap id="BaseResultMap" type="com.netease.nemo.entlive.model.po.ChorusRecord">
+        <id column="id" jdbcType="BIGINT" property="id"/>
+        <result column="chorus_id" jdbcType="VARCHAR" property="chorusId"/>
+        <result column="room_uuid" jdbcType="VARCHAR" property="roomUuid"/>
+        <result column="room_name" jdbcType="VARCHAR" property="roomName"/>
+        <result column="order_id" jdbcType="BIGINT" property="orderId" />
+        <result column="live_record_id" jdbcType="BIGINT" property="liveRecordId"/>
+        <result column="leader_uuid" jdbcType="VARCHAR" property="leaderUuid"/>
+        <result column="assistant_uuid" jdbcType="VARCHAR" property="assistantUuid"/>
+        <result column="status" jdbcType="TINYINT" property="status"/>
+        <result column="state" jdbcType="TINYINT" property="state"/>
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime"/>
+        <result column="update_time" jdbcType="TIMESTAMP" property="updateTime"/>
+        <result column="leader_device_param" jdbcType="VARCHAR" property="leaderDeviceParam" />
+        <result column="assistant_device_param" jdbcType="VARCHAR" property="assistantDeviceParam" />
+    </resultMap>
+    <sql id="Base_Column_List">
+        id, chorus_id, room_uuid, room_name, order_id, live_record_id, leader_uuid,
+        assistant_uuid, status, state, create_time, update_time, leader_device_param, assistant_device_param
+    </sql>
+    <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from chorus_record
+        where id = #{id,jdbcType=BIGINT}
+    </select>
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+        delete from chorus_record
+        where id = #{id,jdbcType=BIGINT}
+    </delete>
+    <insert id="insert" keyColumn="id" keyProperty="id" parameterType="com.netease.nemo.entlive.model.po.ChorusRecord"
+            useGeneratedKeys="true">
+        insert into chorus_record (chorus_id, room_uuid,
+        room_name, order_id, live_record_id,
+        leader_uuid, assistant_uuid, status,
+        state, create_time, update_time, leader_device_param, assistant_device_param
+        )
+        values (#{chorusId,jdbcType=VARCHAR}, #{roomUuid,jdbcType=VARCHAR},
+        #{roomName,jdbcType=VARCHAR}, #{orderId,jdbcType=VARCHAR}, #{liveRecordId,jdbcType=BIGINT},
+        #{leaderUuid,jdbcType=VARCHAR}, #{assistantUuid,jdbcType=VARCHAR}, #{status,jdbcType=TINYINT},
+        #{state,jdbcType=TINYINT}, #{createTime,jdbcType=TIMESTAMP}, #{updateTime,jdbcType=TIMESTAMP},
+        #{leaderDeviceParam,jdbcType=VARCHAR}, #{assistantDeviceParam,jdbcType=VARCHAR}
+        )
+    </insert>
+    <insert id="insertSelective" keyColumn="id" keyProperty="id"
+            parameterType="com.netease.nemo.entlive.model.po.ChorusRecord" useGeneratedKeys="true">
+        insert into chorus_record
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="chorusId != null">
+                chorus_id,
+            </if>
+            <if test="roomUuid != null">
+                room_uuid,
+            </if>
+            <if test="roomName != null">
+                room_name,
+            </if>
+            <if test="orderId != null">
+                order_id,
+            </if>
+            <if test="liveRecordId != null">
+                live_record_id,
+            </if>
+            <if test="leaderUuid != null">
+                leader_uuid,
+            </if>
+            <if test="assistantUuid != null">
+                assistant_uuid,
+            </if>
+            <if test="status != null">
+                status,
+            </if>
+            <if test="state != null">
+                state,
+            </if>
+            <if test="createTime != null">
+                create_time,
+            </if>
+            <if test="updateTime != null">
+                update_time,
+            </if>
+            <if test="leaderDeviceParam != null">
+                leader_device_param,
+            </if>
+            <if test="assistantDeviceParam != null">
+                assistant_device_param,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="chorusId != null">
+                #{chorusId,jdbcType=VARCHAR},
+            </if>
+            <if test="roomUuid != null">
+                #{roomUuid,jdbcType=VARCHAR},
+            </if>
+            <if test="roomName != null">
+                #{roomName,jdbcType=VARCHAR},
+            </if>
+            <if test="orderId != null">
+                #{orderId,jdbcType=VARCHAR},
+            </if>
+            <if test="liveRecordId != null">
+                #{liveRecordId,jdbcType=BIGINT},
+            </if>
+            <if test="leaderUuid != null">
+                #{leaderUuid,jdbcType=VARCHAR},
+            </if>
+            <if test="assistantUuid != null">
+                #{assistantUuid,jdbcType=VARCHAR},
+            </if>
+            <if test="status != null">
+                #{status,jdbcType=TINYINT},
+            </if>
+            <if test="state != null">
+                #{state,jdbcType=TINYINT},
+            </if>
+            <if test="createTime != null">
+                #{createTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="updateTime != null">
+                #{updateTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="leaderDeviceParam != null">
+                #{leaderDeviceParam,jdbcType=VARCHAR},
+            </if>
+            <if test="assistantDeviceParam != null">
+                #{assistantDeviceParam,jdbcType=VARCHAR},
+            </if>
+        </trim>
+    </insert>
+    <update id="updateByPrimaryKeySelective" parameterType="com.netease.nemo.entlive.model.po.ChorusRecord">
+        update chorus_record
+        <set>
+            <if test="chorusId != null">
+                chorus_id = #{chorusId,jdbcType=VARCHAR},
+            </if>
+            <if test="roomUuid != null">
+                room_uuid = #{roomUuid,jdbcType=VARCHAR},
+            </if>
+            <if test="roomName != null">
+                room_name = #{roomName,jdbcType=VARCHAR},
+            </if>
+            <if test="orderId != null">
+                order_id = #{orderId,jdbcType=VARCHAR},
+            </if>
+            <if test="liveRecordId != null">
+                live_record_id = #{liveRecordId,jdbcType=BIGINT},
+            </if>
+            <if test="leaderUuid != null">
+                leader_uuid = #{leaderUuid,jdbcType=VARCHAR},
+            </if>
+            <if test="assistantUuid != null">
+                assistant_uuid = #{assistantUuid,jdbcType=VARCHAR},
+            </if>
+            <if test="status != null">
+                status = #{status,jdbcType=TINYINT},
+            </if>
+            <if test="state != null">
+                state = #{state,jdbcType=TINYINT},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="leaderDeviceParam != null">
+                leader_device_param = #{leaderDeviceParam,jdbcType=VARCHAR},
+            </if>
+            <if test="assistantDeviceParam != null">
+                assistant_device_param = #{assistantDeviceParam,jdbcType=VARCHAR},
+            </if>
+        </set>
+        where id = #{id,jdbcType=BIGINT}
+    </update>
+    <update id="updateByPrimaryKey" parameterType="com.netease.nemo.entlive.model.po.ChorusRecord">
+        update chorus_record
+        set chorus_id = #{chorusId,jdbcType=VARCHAR},
+        room_uuid = #{roomUuid,jdbcType=VARCHAR},
+        room_name = #{roomName,jdbcType=VARCHAR},
+        order_id = #{orderId,jdbcType=VARCHAR},
+        live_record_id = #{liveRecordId,jdbcType=BIGINT},
+        leader_uuid = #{leaderUuid,jdbcType=VARCHAR},
+        assistant_uuid = #{assistantUuid,jdbcType=VARCHAR},
+        status = #{status,jdbcType=TINYINT},
+        state = #{state,jdbcType=TINYINT},
+        create_time = #{createTime,jdbcType=TIMESTAMP},
+        update_time = #{updateTime,jdbcType=TIMESTAMP},
+        leader_device_param = #{leaderDeviceParam,jdbcType=VARCHAR},
+        assistant_device_param = #{assistantDeviceParam,jdbcType=VARCHAR}
+        where id = #{id,jdbcType=BIGINT}
+    </update>
+
+    <select id="selectByChorusId" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from chorus_record
+        where chorus_id = #{chorusId,jdbcType=VARCHAR}
+    </select>
+
+    <select id="selectNotEndChorusRecord" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from chorus_record
+        where room_uuid = #{roomUuid,jdbcType=VARCHAR}
+        and state != 4 and status = 1
+    </select>
+
+    <select id="selectOrderSongChorusRecord" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from chorus_record
+        where room_uuid = #{roomUuid,jdbcType=VARCHAR}
+        and order_id = #{orderId,jdbcType=BIGINT}
+    </select>
+</mapper>

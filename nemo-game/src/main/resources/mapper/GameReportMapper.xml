@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.netease.nemo.game.mapper.GameReportMapper">
+  <resultMap id="BaseResultMap" type="com.netease.nemo.game.model.po.GameReport">
+    <id column="id" jdbcType="BIGINT" property="id" />
+    <result column="game_record_id" jdbcType="BIGINT" property="gameRecordId" />
+    <result column="report_msg" jdbcType="VARCHAR" property="reportMsg" />
+    <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+    <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    id, game_record_id, report_msg, create_time, update_time
+  </sql>
+  <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from game_report
+    where id = #{id,jdbcType=BIGINT}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+    delete from game_report
+    where id = #{id,jdbcType=BIGINT}
+  </delete>
+  <insert id="insert" keyColumn="id" keyProperty="id" parameterType="com.netease.nemo.game.model.po.GameReport" useGeneratedKeys="true">
+    insert into game_report (game_record_id, report_msg,
+      create_time, update_time)
+    values (#{gameRecordId,jdbcType=BIGINT}, #{reportMsg,jdbcType=VARCHAR},
+      #{createTime,jdbcType=TIMESTAMP}, #{updateTime,jdbcType=TIMESTAMP})
+  </insert>
+  <insert id="insertSelective" keyColumn="id" keyProperty="id" parameterType="com.netease.nemo.game.model.po.GameReport" useGeneratedKeys="true">
+    insert into game_report
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="gameRecordId != null">
+        game_record_id,
+      </if>
+      <if test="reportMsg != null">
+        report_msg,
+      </if>
+      <if test="createTime != null">
+        create_time,
+      </if>
+      <if test="updateTime != null">
+        update_time,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="gameRecordId != null">
+        #{gameRecordId,jdbcType=BIGINT},
+      </if>
+      <if test="reportMsg != null">
+        #{reportMsg,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null">
+        #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updateTime != null">
+        #{updateTime,jdbcType=TIMESTAMP},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.netease.nemo.game.model.po.GameReport">
+    update game_report
+    <set>
+      <if test="gameRecordId != null">
+        game_record_id = #{gameRecordId,jdbcType=BIGINT},
+      </if>
+      <if test="reportMsg != null">
+        report_msg = #{reportMsg,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null">
+        create_time = #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updateTime != null">
+        update_time = #{updateTime,jdbcType=TIMESTAMP},
+      </if>
+    </set>
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.netease.nemo.game.model.po.GameReport">
+    update game_report
+    set game_record_id = #{gameRecordId,jdbcType=BIGINT},
+      report_msg = #{reportMsg,jdbcType=VARCHAR},
+      create_time = #{createTime,jdbcType=TIMESTAMP},
+      update_time = #{updateTime,jdbcType=TIMESTAMP}
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+</mapper>

@@ -15,10 +15,11 @@
     <result column="live" jdbcType="TINYINT" property="live" />
     <result column="live_type" jdbcType="TINYINT" property="liveType" />
     <result column="live_config" jdbcType="VARCHAR" property="liveConfig" />
+    <result column="sing_mode" jdbcType="TINYINT" property="singMode" />
   </resultMap>
   <sql id="Base_Column_List">
     id, room_archive_id, room_uuid, room_name, user_uuid, live_topic, cover, create_time,
-    update_time, status, live, live_type, live_config
+    update_time, status, live, live_type, live_config, sing_mode
   </sql>
   <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="BaseResultMap">
     select 
@@ -34,11 +35,11 @@
     insert into live_record (room_archive_id, room_uuid, room_name,
       user_uuid, live_topic, cover, 
       create_time, update_time, status, 
-      live, live_type, live_config)
+      live, live_type, live_config, sing_mode)
     values (#{roomArchiveId,jdbcType=VARCHAR}, #{roomUuid,jdbcType=VARCHAR}, #{roomName,jdbcType=VARCHAR},
       #{userUuid,jdbcType=VARCHAR}, #{liveTopic,jdbcType=VARCHAR}, #{cover,jdbcType=VARCHAR}, 
       #{createTime,jdbcType=TIMESTAMP}, #{updateTime,jdbcType=TIMESTAMP}, #{status,jdbcType=TINYINT}, 
-      #{live,jdbcType=TINYINT}, #{liveType,jdbcType=TINYINT}, #{liveConfig,jdbcType=VARCHAR})
+      #{live,jdbcType=TINYINT}, #{liveType,jdbcType=TINYINT}, #{liveConfig,jdbcType=VARCHAR}, #{singMode,jdbcType=TINYINT})
   </insert>
   <insert id="insertSelective" keyColumn="id" keyProperty="id" parameterType="com.netease.nemo.entlive.model.po.LiveRecord" useGeneratedKeys="true">
     insert into live_record
@@ -79,6 +80,9 @@
       <if test="liveConfig != null">
         live_config,
       </if>
+      <if test="singMode != null">
+        sing_mode,
+      </if>
     </trim>
     <trim prefix="values (" suffix=")" suffixOverrides=",">
       <if test="roomArchiveId != null">
@@ -116,6 +120,9 @@
       </if>
       <if test="liveConfig != null">
         #{liveConfig,jdbcType=VARCHAR},
+      </if>
+      <if test="singMode != null">
+        #{singMode,jdbcType=TINYINT},
       </if>
     </trim>
   </insert>
@@ -158,6 +165,9 @@
       <if test="liveConfig != null">
         live_config = #{liveConfig,jdbcType=VARCHAR},
       </if>
+      <if test="singMode != null">
+        sing_mode = #{singMode,jdbcType=TINYINT},
+      </if>
     </set>
     where id = #{id,jdbcType=BIGINT}
   </update>
@@ -174,7 +184,8 @@
       status = #{status,jdbcType=TINYINT},
       live = #{live,jdbcType=TINYINT},
       live_type = #{liveType,jdbcType=TINYINT},
-      live_config = #{liveConfig,jdbcType=VARCHAR}
+      live_config = #{liveConfig,jdbcType=VARCHAR},
+      sing_mode = #{singMode,jdbcType=TINYINT}
     where id = #{id,jdbcType=BIGINT}
   </update>
 
@@ -215,5 +226,13 @@
       and user_uuid != #{excludeUserUuid,jdbcType=VARCHAR}
     </if>
     order by create_time desc
+  </select>
+
+  <select id="selectByRoomUuid" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List" />
+    from live_record
+    where room_uuid = #{roomUuid,jdbcType=VARCHAR}
+    and status = 1
   </select>
 </mapper>

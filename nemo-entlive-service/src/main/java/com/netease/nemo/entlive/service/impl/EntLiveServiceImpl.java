@@ -15,6 +15,7 @@ import com.netease.nemo.entlive.enums.LiveEnum;
 import com.netease.nemo.entlive.enums.LiveTypeEnum;
 import com.netease.nemo.entlive.enums.SeatModeEnum;
 import com.netease.nemo.entlive.enums.SeatStatusEnum;
+import com.netease.nemo.entlive.event.GameRoomCloseEvent;
 import com.netease.nemo.entlive.model.po.LiveRecord;
 import com.netease.nemo.entlive.model.po.LiveReward;
 import com.netease.nemo.entlive.parameter.CreateLiveParam;
@@ -23,6 +24,7 @@ import com.netease.nemo.entlive.parameter.LiveRewardParam;
 import com.netease.nemo.entlive.service.*;
 import com.netease.nemo.entlive.util.LiveResourceUtil;
 import com.netease.nemo.entlive.wrapper.LiveRecordWrapper;
+import com.netease.nemo.entlive.wrapper.SingRedisWrapper;
 import com.netease.nemo.enums.EventTypeEnum;
 import com.netease.nemo.exception.BsException;
 import com.netease.nemo.model.po.Gift;
@@ -32,6 +34,7 @@ import com.netease.nemo.openApi.dto.neroom.CreateNeRoomDto;
 import com.netease.nemo.openApi.dto.neroom.NeRoomSeatDto;
 import com.netease.nemo.openApi.dto.nim.YunxinCreateLiveChannelDto;
 import com.netease.nemo.openApi.paramters.neroom.CreateNeRoomParam;
+import com.netease.nemo.queue.producer.DelayQueueProducer;
 import com.netease.nemo.service.UserService;
 import com.netease.nemo.util.ObjectMapperUtil;
 import com.netease.nemo.util.UUIDUtil;
@@ -40,6 +43,7 @@ import com.netease.nemo.wrapper.GiftMapperWrapper;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
@@ -108,15 +112,27 @@ public class EntLiveServiceImpl implements EntLiveService {
     @Resource
     private MusicPlayService musicPlayService;
 
+    @Value("${business.gameRoomConfigId}")
+    private Long gameRoomConfigId;
+
+    @Resource
+    private SingRedisWrapper singRedisWrapper;
+
+    @Resource
+    private DelayQueueProducer delayQueueProducer;
+
+    @Resource
+    private ApplicationEventPublisher publisher;
+
     @Override
     public LiveDefaultInfoDto getDefaultLiveInfo() {
         Locale locale = LocaleContextHolder.getLocale();
         if (locale.equals(Locale.CHINA)
                 || locale.equals(Locale.CHINESE)
                 || locale.equals(Locale.TRADITIONAL_CHINESE)) {
-            return new LiveDefaultInfoDto(LiveResourceUtil.getRandomTopic(), LiveResourceUtil.getRandomPicture());
+            return new LiveDefaultInfoDto(LiveResourceUtil.getRandomTopic(), LiveResourceUtil.getRandomPicture(), LiveResourceUtil.defaultPicUrlList);
         } else {
-            return new LiveDefaultInfoDto(LiveResourceUtil.getRandomEnTopic(), LiveResourceUtil.getRandomPicture());
+            return new LiveDefaultInfoDto(LiveResourceUtil.getRandomEnTopic(), LiveResourceUtil.getRandomPicture(), LiveResourceUtil.defaultPicUrlList);
         }
     }
 
@@ -213,6 +229,8 @@ public class EntLiveServiceImpl implements EntLiveService {
             return voiceRoomConfigId;
         } else if (LiveTypeEnum.INTERACTION_LIVE_CROSS_CHANNEL.getType() == liveType) {
             return pkConfigId;
+        } else if (LiveTypeEnum.GAME_ROOM.getType() == liveType) {
+            return gameRoomConfigId;
         }
 
         return voiceRoomConfigId;
@@ -246,6 +264,10 @@ public class EntLiveServiceImpl implements EntLiveService {
             nimService.deleteLiveChannel(live.get("cid").getAsString());
         }
 
+        if (LiveTypeEnum.isKTVLive(liveRecord.getLiveType())) {
+            // 房间结束清空ktv房间演唱信息
+            singRedisWrapper.delSingBaseInfo(liveRecord.getRoomUuid());
+        }
 
         // 删除NeRoom房间
         neRoomService.deleteNeRoom(liveRecord.getRoomArchiveId());
@@ -258,6 +280,10 @@ public class EntLiveServiceImpl implements EntLiveService {
 
         // 清空当前播放歌曲信息
         musicPlayService.cleanPlayerMusicInfo(liveRecordId);
+
+        // 发送房间结束通知
+        GameRoomCloseEvent gameRoomCloseTask = new GameRoomCloseEvent(liveRecord.getRoomUuid());
+        publisher.publishEvent(gameRoomCloseTask);
     }
 
     @Override

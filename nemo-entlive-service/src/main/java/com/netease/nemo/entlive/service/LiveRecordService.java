@@ -1,6 +1,5 @@
 package com.netease.nemo.entlive.service;
 
-import com.netease.nemo.entlive.dto.LiveDto;
 import com.netease.nemo.entlive.dto.LiveRecordDto;
 import com.netease.nemo.entlive.model.po.LiveRecord;
 
@@ -44,6 +43,16 @@ public interface LiveRecordService {
      * @return LiveRecordDto
      */
     LiveRecordDto getLivingRecordByRoomArchiveId(String roomArchiveId);
+
+
+    /**
+     * 获取主播当前直播的直播记录 不存在则报错
+     *
+     * @param roomUuid 房间uuid唯一编号
+     * @return LiveRecordDto
+     */
+    LiveRecordDto getLivingRecordByRoomUuid(String roomUuid);
+
 
     /**
      * 获取主播当前直播的直播记录 不存在则返回null

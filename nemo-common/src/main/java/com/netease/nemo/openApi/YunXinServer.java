@@ -7,6 +7,7 @@ import com.netease.nemo.openApi.dto.response.ImResponse;
 import com.netease.nemo.openApi.dto.response.LiveWallSolutionResponse;
 import com.netease.nemo.openApi.dto.response.NeRoomResponse;
 import com.netease.nemo.util.CheckSumBuilder;
+import com.netease.nemo.util.SudSignatureUtil;
 import com.netease.nemo.util.UUIDUtil;
 import com.netease.nemo.util.gson.GsonUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -114,5 +115,12 @@ public class YunXinServer {
         headers.add("CurTime", curTime);
         headers.add("CheckSum", CheckSumBuilder.getCheckSum(nonce, curTime, yunXinConfigProperties.getAppSecret()));
         headers.add("AppKey", yunXinConfigProperties.getAppKey());
+    }
+
+    public void addSudAuthorization(HttpHeaders headers, String appId, String appSecret, String body, String timestamp, String nonce) {
+        String signature = SudSignatureUtil.createSignature(appId, appSecret, body, timestamp, nonce);
+        String authorization = String.format("Sud-Auth app_id=\"%s\",timestamp=\"%s\",nonce=\"%s\",signature=\"%s\"",
+                appId, timestamp, nonce, signature);
+        headers.add("Authorization", authorization);
     }
 }

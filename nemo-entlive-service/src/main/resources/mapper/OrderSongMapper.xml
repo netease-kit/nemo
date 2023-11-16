@@ -224,6 +224,14 @@
     and status != -1 order by set_top_time desc, id asc
   </select>
 
+  <select id="selectByLiveRecordIdForKtv" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List"/>
+    from order_song
+    where live_record_id = #{liveRecordId,jdbcType=BIGINT}
+    and status not in (-1,2) order by status desc, set_top_time desc, id asc
+  </select>
+
   <select id="selectByLiveRecordIdAndUserId" resultMap="BaseResultMap">
     select
     <include refid="Base_Column_List" />
@@ -231,6 +239,15 @@
     where live_record_id = #{liveRecordId,jdbcType=BIGINT}
     and user_uuid = #{userUuid,jdbcType=VARCHAR}
     and status != -1  order by set_top_time desc, id asc
+  </select>
+
+  <select id="selectByLiveRecordIdAndUserIdForKtv" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List"/>
+    from order_song
+    where live_record_id = #{liveRecordId,jdbcType=BIGINT}
+    and user_uuid = #{userUuid,jdbcType=VARCHAR}
+    and status not in (-1,2) order by status desc, set_top_time desc, id asc
   </select>
 
   <update id="cleanOrderSongs">
@@ -261,6 +278,14 @@
     where live_record_id = #{liveRecordId,jdbcType=BIGINT}
     and user_uuid = #{userUuid,jdbcType=VARCHAR}
     and status != -1
+  </select>
+
+  <select id="selectOrderSongCountForKtv" resultType="int">
+    select
+    count(id)
+    from order_song
+    where live_record_id = #{liveRecordId,jdbcType=BIGINT}
+    and status not in (-1,2)
   </select>
 
 </mapper>
