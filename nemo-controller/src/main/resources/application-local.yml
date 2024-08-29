@@ -34,7 +34,7 @@ yunxin:
     appSecret: ${APPSECRET} # 云信appSecret
     nimHost: https://api.netease.im
     neLiveHost: http://vcloud.163.com
-    neRoomHost: https://roomkit-dev.netease.im/
+    neRoomHost: https://roomkit.netease.im/
     securityAuditHost: https://logic-dev.netease.im/
     rtcHost: https://logic-dev.netease.im/
 business:
