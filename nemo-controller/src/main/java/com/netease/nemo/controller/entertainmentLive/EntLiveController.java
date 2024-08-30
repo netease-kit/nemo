@@ -59,6 +59,16 @@ public class EntLiveController {
                 RedisKeyEnum.ENT_LIVE_ROOM_LOCK_KEY, param.getLiveRecordId());
     }
 
+    @RequestMapping(value = "/joinedLiveRoom")
+    public void memberJoinedRoom(@Valid @RequestBody LiveParam param) {
+        AssertUtil.notNull(param, ErrorCode.BAD_REQUEST, "The Request Body Can Not Null");
+        lockerService.tryLockAndDo(() -> {
+            entLiveService.entryLiveRoom(Context.get().getUserUuid(), param.getLiveRecordId());
+        }, RedisKeyEnum.ENT_LIVE_ROOM_LOCK_KEY, param.getLiveRecordId());
+
+    }
+
+
     @RequestMapping(value = "/info")
     public LiveIntroDto getLiveInfo(@Valid @RequestBody LiveParam param) {
         AssertUtil.notNull(param, ErrorCode.BAD_REQUEST, "The Request Body Can Not Null");
