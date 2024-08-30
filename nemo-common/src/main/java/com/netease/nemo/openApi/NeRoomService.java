@@ -223,4 +223,28 @@ public class NeRoomService {
         }
     }
 
+    public NeRoomMemberDto.User getRoomMemberInfo(String roomArchiveId, String userUuid) {
+        log.info("start getRoomMemberInfo");
+        if (roomArchiveId == null || StringUtils.isEmpty(userUuid)) {
+            throw new BsException(ErrorCode.INTERNAL_SERVER_ERROR, "parameter error");
+        }
+
+        String url = String.format("/apps/v2/room-user?roomArchiveId=%s&userUuid=%s", roomArchiveId, userUuid);
+
+        try {
+            NeRoomResponse neRoomResponse = yunXinServer.requestEntityForNeRoom(url, HttpMethod.GET, null);
+            Integer code = neRoomResponse.getCode();
+            if (code == null || code != 0) {
+                throw new BsException(ErrorCode.INTERNAL_SERVER_ERROR, neRoomResponse.getMsg());
+            }
+            return GsonUtil.fromJson(GsonUtil.toJson(neRoomResponse.getData()), NeRoomMemberDto.User.class);
+        } catch (BsException e) {
+            throw e;
+        } catch (Exception e) {
+            log.info("sendNeRoomCustomMessage error.", e);
+            throw new BsException(ErrorCode.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+
 }

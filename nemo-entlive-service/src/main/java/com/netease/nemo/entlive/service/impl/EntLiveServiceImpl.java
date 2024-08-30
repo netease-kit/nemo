@@ -21,6 +21,7 @@ import com.netease.nemo.entlive.model.po.LiveReward;
 import com.netease.nemo.entlive.parameter.CreateLiveParam;
 import com.netease.nemo.entlive.parameter.LiveListQueryParam;
 import com.netease.nemo.entlive.parameter.LiveRewardParam;
+import com.netease.nemo.entlive.parameter.neroomNotify.RoomMember;
 import com.netease.nemo.entlive.service.*;
 import com.netease.nemo.entlive.util.LiveResourceUtil;
 import com.netease.nemo.entlive.wrapper.LiveRecordWrapper;
@@ -31,6 +32,7 @@ import com.netease.nemo.model.po.Gift;
 import com.netease.nemo.openApi.NeRoomService;
 import com.netease.nemo.openApi.NimService;
 import com.netease.nemo.openApi.dto.neroom.CreateNeRoomDto;
+import com.netease.nemo.openApi.dto.neroom.NeRoomMemberDto;
 import com.netease.nemo.openApi.dto.neroom.NeRoomSeatDto;
 import com.netease.nemo.openApi.dto.nim.YunxinCreateLiveChannelDto;
 import com.netease.nemo.openApi.paramters.neroom.CreateNeRoomParam;
@@ -53,10 +55,12 @@ import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static com.netease.nemo.entlive.util.LiveResourceUtil.listenDefaultSeatCount;
 import static com.netease.nemo.entlive.util.LiveResourceUtil.voiceDefaultSeatCount;
+import static com.netease.nemo.enums.RedisKeyEnum.NE_ROOM_MEMBER_TABLE_KEY;
 
 @Service
 @Slf4j
@@ -353,7 +357,30 @@ public class EntLiveServiceImpl implements EntLiveService {
         RewardContentMessage rewardContentMessage = buildRewardMessage(userUuid, targets, gift, giftCount, liveRecordDto, seatUserReward);
         messageService.sendNeRoomChatMsg(liveRecordDto.getRoomUuid(), new EventDto(rewardContentMessage, EventTypeEnum.ENT_USER_REWARD.getType()));
     }
+    @Override
+    public void entryLiveRoom(String userUuid, Long liveRecordId) {
+        LiveRecordDto liveRecordDto = liveRecordService.getLiveRecord(liveRecordId);
+        if (liveRecordDto == null) {
+            log.info("LiveRecord is valid");
+            return;
+        }
 
+        String neRoomMemberTableKey = NE_ROOM_MEMBER_TABLE_KEY.getKeyPrefix() + liveRecordDto.getRoomArchiveId();
+
+        NeRoomMemberDto.User user = neRoomService.getRoomMemberInfo(liveRecordDto.getRoomArchiveId(), userUuid);
+        if (user == null) {
+            throw new BsException(ErrorCode.FORBIDDEN);
+        }
+        RoomMember member = new RoomMember(user.getRole(), user.getUserUuid());
+
+        nemoRedisTemplate.opsForHash().put(neRoomMemberTableKey, member.getUserUuid(), member);
+
+        // 如果用户是主播且直播间状态是'待直播'，则标记直播状态为为'直播中'
+        if (member.getUserUuid().equals(liveRecordDto.getUserUuid()) && liveRecordDto.getLive().equals(LiveEnum.NOT_START.getCode())) {
+            liveRecordService.updateLiveState(liveRecordId, LiveEnum.LIVE.getCode());
+        }
+        nemoRedisTemplate.expire(neRoomMemberTableKey, 7, TimeUnit.DAYS);
+    }
     /**
      * 构造打赏消息事件
      *

@@ -46,6 +46,9 @@ public interface EntLiveService {
      */
     void closeLiveRoom(String operator, Long liveRecordId);
 
+    void entryLiveRoom(String userUuid, Long liveRecordId);
+
+
     /**
      * 分页查询直播记录
      *
