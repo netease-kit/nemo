@@ -90,10 +90,4 @@ public class CreateNeRoomParamV3 {
             private String seatVersion;
         }
     }
-
-    public interface SeatVersion{
-        String V1 = "v1";
-        String V2 = "v2";
-
-    }
 }

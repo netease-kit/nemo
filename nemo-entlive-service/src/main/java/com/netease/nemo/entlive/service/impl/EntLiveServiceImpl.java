@@ -539,12 +539,6 @@ public class EntLiveServiceImpl implements EntLiveService {
             seatConfig.setSeatCount(param.getSeatCount());
             seatConfig.setApplyMode(param.getSeatApplyMode());
             seatConfig.setInviteMode(param.getSeatInviteMode());
-            if(LiveTypeEnum.isPkLive(param.getLiveType())){
-                // 直播房使用v2版本麦位组件，根据次参数区分
-                seatConfig.setSeatVersion(CreateNeRoomParamV3.SeatVersion.V2);
-            }else {
-                seatConfig.setSeatVersion(CreateNeRoomParamV3.SeatVersion.V1);
-            }
             config.setSeat(seatConfig);
         }
 
