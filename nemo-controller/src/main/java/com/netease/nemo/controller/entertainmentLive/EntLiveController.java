@@ -37,6 +37,7 @@ public class EntLiveController {
     @Resource
     private EntLiveService entLiveService;
 
+    @Deprecated
     @RequestMapping("/createLive")
     public LiveIntroDto createLive(@Valid @RequestBody CreateLiveParam param) {
         checkCreateLiveParam(param);
