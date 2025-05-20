@@ -1,5 +1,6 @@
 package com.netease.nemo.entlive.service;
 
+import com.netease.nemo.entlive.dto.AudienceInfo;
 import com.netease.nemo.entlive.parameter.neroomNotify.RoomMember;
 import com.netease.nemo.openApi.dto.neroom.NeRoomSeatDto;
 
@@ -60,4 +61,12 @@ public interface NeRoomMemberService {
      * @return List<NeRoomSeatDto>
      */
     List<NeRoomSeatDto> getSeatList( String roomArchiveId);
+
+    void handleUserEnter(Long chatRoomId, String accid, long timestamp);
+
+    void handleUserLeave(Long chatRoomId, String accid, long timestamp);
+
+    List<AudienceInfo> getOnlineAudienceList(Long chatRoomId, int page, int size);
+
+    Long getOnlineAudienceCount(Long chatRoomId);
 }

@@ -1,8 +1,10 @@
 package com.netease.nemo.entlive.service;
 
 import com.github.pagehelper.PageInfo;
+import com.netease.nemo.entlive.dto.AudienceInfo;
 import com.netease.nemo.entlive.dto.LiveDefaultInfoDto;
 import com.netease.nemo.entlive.dto.LiveIntroDto;
+import com.netease.nemo.entlive.dto.PageDto;
 import com.netease.nemo.entlive.parameter.CreateLiveParam;
 import com.netease.nemo.entlive.parameter.LiveListQueryParam;
 import com.netease.nemo.entlive.parameter.LiveRewardParam;
@@ -63,4 +65,21 @@ public interface EntLiveService {
      * @param liveRewardParam liveRewardParam对象
      */
     void liveReward(LiveRewardParam liveRewardParam);
+
+    LiveIntroDto createLiveRoomV3(CreateLiveParam param);
+
+    PageDto<AudienceInfo> getAudienceList(Long liveRecordId, Integer page, Integer size);
+
+    LiveIntroDto getOngoingLive(String appKey, String userUuid);
+
+    void updatePkLiveLayout(Long liveRecordId);
+
+    void pauseLive(String operator, Long liveRecordId);
+
+    /**
+     * 恢复直播
+     * @param operator 主播
+     * @param liveRecordId 直播Id
+     */
+    void resumeLive(String operator, Long liveRecordId);
 }

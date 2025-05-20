@@ -23,5 +23,12 @@ public class UserOnSeatNotifyDto {
         @SerializedName("on_seat_type")
         private Integer onSeatType;
         private String ext;
+
+        // 添加该字段用于排序
+        private Long timestamp;
+        /**
+         * 上麦位置
+         */
+        private Integer index;
     }
 }

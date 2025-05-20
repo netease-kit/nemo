@@ -3,6 +3,7 @@ package com.netease.nemo.entlive.model.po;
 import com.netease.nemo.entlive.enums.LiveEnum;
 import com.netease.nemo.entlive.enums.StatusEnum;
 import com.netease.nemo.entlive.parameter.CreateLiveParam;
+import com.netease.nemo.openApi.dto.neroom.CreateNeRoomDto;
 import com.netease.nemo.openApi.dto.nim.YunxinCreateLiveChannelDto;
 import com.netease.nemo.util.gson.GsonUtil;
 
@@ -81,6 +82,8 @@ public class LiveRecord {
      */
     private Integer singMode;
 
+    private Long chatRoomId;
+
 
     public LiveRecord() {
     }
@@ -119,6 +122,34 @@ public class LiveRecord {
             liveRecord.setSingMode(param.getSingMode());
         }
         return liveRecord;
+    }
+
+    public static LiveRecord builderLiveRecordV3(CreateLiveParam param,  String userUuid, String roomUuid, CreateNeRoomDto neRoomDto) {
+        LiveRecord liveRecord = new LiveRecord();
+        liveRecord.setLiveType(param.getLiveType());
+        liveRecord.setCover(param.getCover());
+        liveRecord.setLiveTopic(param.getLiveTopic());
+        liveRecord.setRoomUuid(roomUuid);
+        liveRecord.setRoomArchiveId(neRoomDto.getRoomArchiveId());
+        liveRecord.setChatRoomId(neRoomDto.getChatRoomId());
+        liveRecord.setLiveConfig(GsonUtil.toJson(CreateNeRoomDto.LiveConfigCamelCase.convert(neRoomDto.getLiveConfig())));
+        liveRecord.setStatus(StatusEnum.VALID.getCode());
+        liveRecord.setLive(LiveEnum.NOT_START.getCode());
+        liveRecord.setUserUuid(userUuid);
+        liveRecord.setRoomName(param.getRoomName());
+        if(null != param.getSingMode()){
+            liveRecord.setSingMode(param.getSingMode());
+        }
+        return liveRecord;
+    }
+
+
+    public Long getChatRoomId() {
+        return chatRoomId;
+    }
+
+    public void setChatRoomId(Long chatRoomId) {
+        this.chatRoomId = chatRoomId;
     }
 
     public Long getId() {

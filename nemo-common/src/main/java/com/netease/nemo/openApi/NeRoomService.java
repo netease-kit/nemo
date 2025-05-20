@@ -3,14 +3,9 @@ package com.netease.nemo.openApi;
 import com.netease.nemo.code.ErrorCode;
 import com.netease.nemo.config.YunXinConfigProperties;
 import com.netease.nemo.exception.BsException;
-import com.netease.nemo.openApi.dto.neroom.CreateNeRoomDto;
-import com.netease.nemo.openApi.dto.neroom.NeRoomMemberDto;
-import com.netease.nemo.openApi.dto.neroom.NeRoomSeatDto;
-import com.netease.nemo.openApi.dto.neroom.NeRoomUserDto;
+import com.netease.nemo.openApi.dto.neroom.*;
 import com.netease.nemo.openApi.dto.response.NeRoomResponse;
-import com.netease.nemo.openApi.paramters.neroom.CreateNeRoomParam;
-import com.netease.nemo.openApi.paramters.neroom.CreateNeRoomUserParam;
-import com.netease.nemo.openApi.paramters.neroom.NeRoomMessageParam;
+import com.netease.nemo.openApi.paramters.neroom.*;
 import com.netease.nemo.openApi.paramters.neroom.v1.PutRoomParam;
 import com.netease.nemo.util.ObjectMapperUtil;
 import com.netease.nemo.util.gson.GsonUtil;
@@ -22,7 +17,9 @@ import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 云信NeRoom服务相关API
@@ -247,4 +244,115 @@ public class NeRoomService {
     }
 
 
+    public CreateNeRoomDto createNeRoomV3(CreateNeRoomParamV3 putRoomParam) {
+        log.info("start createNeRoomV4. param:{}", GsonUtil.toJson(putRoomParam));
+        if (putRoomParam == null) {
+            throw new BsException(ErrorCode.INTERNAL_SERVER_ERROR);
+        }
+
+        String url = "/neroom/v4/rooms";
+
+        try {
+            // 这里由于请求参数需要下划线格式，所以转成了jsonBody
+            String body = GsonUtil.toJson(putRoomParam);
+            NeRoomResponse neRoomResponse = yunXinServer.requestEntityForNeRoom( url, HttpMethod.POST, body);
+            Integer code = neRoomResponse.getCode();
+            if (code == null || code != 0) {
+                throw new BsException(ErrorCode.INTERNAL_SERVER_ERROR, neRoomResponse.getMsg());
+            }
+
+            if (neRoomResponse.getData() == null) {
+                throw new BsException(ErrorCode.INTERNAL_SERVER_ERROR);
+            }
+            return GsonUtil.fromJson(GsonUtil.toJson(neRoomResponse.getData()), CreateNeRoomDto.class);
+        } catch (BsException e) {
+            throw e;
+        } catch (Exception e) {
+            log.info("createNeRoom error.", e);
+            throw new BsException(ErrorCode.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
+     * 发起推流任务
+     * https://doc.yunxin.163.com/neroom/docs/TY1NzM5MjQ?platform=server
+     */
+    public StartLiveResponseDto startLive( StartLiveParam startLiveParam) {
+        log.info("start live. param:{}", GsonUtil.toJson(startLiveParam));
+        if (startLiveParam == null) {
+            throw new BsException(ErrorCode.INTERNAL_SERVER_ERROR);
+        }
+        String url = "/apps/v2/live-start";
+
+        try {
+            NeRoomResponse neRoomResponse = yunXinServer.requestEntityForNeRoom( url, HttpMethod.POST, startLiveParam);
+            Integer code = neRoomResponse.getCode();
+            if (code == null || code != 0) {
+                throw new BsException(ErrorCode.INTERNAL_SERVER_ERROR, neRoomResponse.getMsg());
+            }
+            if (neRoomResponse.getData() == null) {
+                throw new BsException(ErrorCode.INTERNAL_SERVER_ERROR);
+            }
+            return ObjectMapperUtil.map(neRoomResponse.getData(), StartLiveResponseDto.class);
+        } catch (BsException e) {
+            throw e;
+        } catch (Exception e) {
+            log.info("createNeRoomUser error.", e);
+            throw new BsException(ErrorCode.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+
+    /**
+     * 更新推流任务
+     * https://doc.yunxin.163.com/neroom/docs/TY1NzM5MjQ?platform=server
+     */
+    public StartLiveResponseDto updateLive(StartLiveParam startLiveParam) {
+        log.info("start live. param:{}", GsonUtil.toJson(startLiveParam));
+        if (startLiveParam == null) {
+            throw new BsException(ErrorCode.INTERNAL_SERVER_ERROR);
+        }
+        String url = "/apps/v2/live-update";
+
+        try {
+            NeRoomResponse neRoomResponse = yunXinServer.requestEntityForNeRoom(url, HttpMethod.POST, startLiveParam);
+            Integer code = neRoomResponse.getCode();
+            if (code == null || code != 0) {
+                throw new BsException(ErrorCode.INTERNAL_SERVER_ERROR, neRoomResponse.getMsg());
+            }
+            if (neRoomResponse.getData() == null) {
+                throw new BsException(ErrorCode.INTERNAL_SERVER_ERROR);
+            }
+            return ObjectMapperUtil.map(neRoomResponse.getData(), StartLiveResponseDto.class);
+        } catch (BsException e) {
+            throw e;
+        } catch (Exception e) {
+            log.info("updateLiveRoom error.", e);
+            throw new BsException(ErrorCode.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    public void stopLive(String roomArchiveId) {
+        log.info("stop live. param:{}", roomArchiveId);
+        if (roomArchiveId == null) {
+            throw new BsException(ErrorCode.INTERNAL_SERVER_ERROR);
+        }
+        String url = "/apps/v2/live-end";
+
+        try {
+            Map<String, String> params = new HashMap<>();
+            params.put("roomArchiveId", roomArchiveId);
+            NeRoomResponse neRoomResponse = yunXinServer.requestEntityForNeRoom( url, HttpMethod.POST, params);
+            Integer code = neRoomResponse.getCode();
+            if (code == null || code != 0) {
+                throw new BsException(ErrorCode.INTERNAL_SERVER_ERROR, neRoomResponse.getMsg());
+            }
+        } catch (BsException e) {
+            throw e;
+        } catch (Exception e) {
+            log.info("createNeRoomUser error.", e);
+            throw new BsException(ErrorCode.INTERNAL_SERVER_ERROR);
+        }
+
+    }
 }

@@ -1,5 +1,6 @@
 package com.netease.nemo.entlive.service.impl;
 
+import com.google.common.collect.Lists;
 import com.netease.nemo.code.ErrorCode;
 import com.netease.nemo.entlive.dto.LiveDto;
 import com.netease.nemo.entlive.dto.LiveRecordDto;
@@ -10,16 +11,23 @@ import com.netease.nemo.entlive.model.po.LiveRecord;
 import com.netease.nemo.entlive.service.LiveRecordService;
 import com.netease.nemo.entlive.wrapper.LiveRecordWrapper;
 import com.netease.nemo.exception.BsException;
+import com.netease.nemo.openApi.dto.neroom.UserOnSeatNotifyDto;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeToken;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
+
+import static com.netease.nemo.enums.RedisKeyEnum.NE_ROOM_SEAT_USER_TABLE_KEY;
 
 /**
  * 娱乐直播房间——直播记录接口实现
@@ -39,7 +47,8 @@ public class LiveRecordServiceImpl implements LiveRecordService {
 
     @Resource
     private LiveRecordWrapper liveRecordWrapper;
-
+    @Resource(name = "nemoRedisTemplate")
+    private RedisTemplate<String, Object> nemoRedisTemplate;
 
     @Override
     @Transactional
@@ -152,5 +161,45 @@ public class LiveRecordServiceImpl implements LiveRecordService {
     @Override
     public LiveRecordDto getLiveRecordByRoomArchiveId(String roomArchiveId) {
         return Optional.ofNullable(liveRecordWrapper.selectByRoomArchiveId(roomArchiveId)).map(o -> modelMapper.map(o, LiveRecordDto.class)).orElse(null);
+    }
+
+    /**
+     * 获取指定房间座位上的所有用户
+     *
+     * @param roomArchiveId 房间归档ID
+     * @return 座位索引到用户信息的映射
+     */
+    @Override
+    public List<UserOnSeatNotifyDto.SeatUser> getAllSeatUsersTyped(String roomArchiveId, String roomManager) {
+        // 构建Redis key
+        String neRoomMemberTableKey = NE_ROOM_SEAT_USER_TABLE_KEY.getKeyPrefix() + roomArchiveId;
+
+        // 获取hash表中的所有键值对
+        Map<Object, Object> rawMap = nemoRedisTemplate.opsForHash().entries(neRoomMemberTableKey);
+
+        if (CollectionUtils.isEmpty(rawMap)) {
+            return Lists.newArrayList();
+        }
+
+        return rawMap.values().stream()
+                .map(o -> (UserOnSeatNotifyDto.SeatUser) o)
+                .sorted((u1, u2) -> {
+                    // 如果第一个用户是主播，则排在最前面
+                    if (u1.getUserUuid().equals(roomManager)) {
+                        return -1;
+                    }
+                    // 如果第二个用户是主播，则排在最前面
+                    if (u2.getUserUuid().equals(roomManager)) {
+                        return 1;
+                    }
+                    // 其他情况按时间戳排序
+                    return Long.compare(u1.getIndex(), u2.getIndex());
+                })
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public LiveRecordDto getLiveRecord(String userUuid, List<Integer> ongoingState) {
+        return Optional.ofNullable(liveRecordWrapper.selectByUserUuidAndState(userUuid, ongoingState)).map(o -> modelMapper.map(o, LiveRecordDto.class)).orElse(null);
     }
 }

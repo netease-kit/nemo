@@ -68,4 +68,5 @@ public class LiveRecordDto {
      */
     private transient String liveConfig;
 
+    private Long chatRoomId;
 }
