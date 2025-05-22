@@ -112,12 +112,19 @@ public class EntNotifyServiceImpl implements EntNotifyService {
         users.forEach(o -> {
             nemoRedisTemplate.opsForHash().put(neRoomMemberTableKey, o.getUserUuid(), o);
 
-            // 如果用户是主播且直播间状态是'待直播'，则标记直播状态为为'直播中'
+            // 如果用户是主播且直播间状态是'待直播'、`暂停中`，则标记直播状态为为'直播中'
             if (o.getUserUuid().equals(liveRecordDto.getUserUuid())
-                    && liveRecordDto.getLive().equals(LiveEnum.NOT_START.getCode())) {
+                    && (LiveEnum.isNotStart(liveRecordDto.getLive()) || LiveEnum.isPause(liveRecordDto.getLive()))) {
                 lockerService.tryLockAndDo(
-                        () -> liveRecordService.updateLiveState(liveRecordId, LiveEnum.LIVE.getCode()),
-                        RedisKeyEnum.ENT_CREATE_LIVE_ROOM_LOCK_KEY, liveRecordId);
+                        () -> {
+                            if(!LiveTypeEnum.isPkLive(liveRecordDto.getLiveType())) {
+                                liveRecordService.updateLiveState(liveRecordId, LiveEnum.LIVE.getCode());
+                            }
+                            else{
+                                entLiveService.updatePkLiveLayout(liveRecordId);
+                            }
+                        },
+                        ENT_LIVE_ROOM_LOCK_KEY, liveRecordId);
             }
         });
         nemoRedisTemplate.expire(neRoomMemberTableKey, 7, TimeUnit.DAYS);
@@ -137,11 +144,13 @@ public class EntNotifyServiceImpl implements EntNotifyService {
         users.forEach(o -> {
             nemoRedisTemplate.opsForHash().delete(neRoomMemberTableKey, o.getUserUuid(), o);
 
-            // 如果用户是主播则结束直播
             if (liveRecordDto.getUserUuid().equals(o.getUserUuid())) {
-                lockerService.tryLockAndDo(
-                        () -> entLiveService.closeLiveRoom(o.getUserUuid(), liveRecordId),
-                        RedisKeyEnum.ENT_LIVE_ROOM_LOCK_KEY, liveRecordId);
+                // 如果非直播，则关闭直播间
+                if (!LiveTypeEnum.isPkLive(liveRecordDto.getLiveType())) {
+                    lockerService.tryLockAndDo(
+                            () -> entLiveService.closeLiveRoom(o.getUserUuid(), liveRecordId),
+                            RedisKeyEnum.ENT_LIVE_ROOM_LOCK_KEY, liveRecordId);
+                }
             }
 
             // KTV场景下删除用户点歌
@@ -176,6 +185,13 @@ public class EntNotifyServiceImpl implements EntNotifyService {
         Integer index = param.getIndex();
 
         nemoRedisTemplate.opsForHash().put(neRoomMemberTableKey, index, param.getUser());
+        // 如果观众上麦，则将直播间状态修改为连麦中
+        lockerService.tryLockAndDo(
+                () -> {
+                    // 更新直播
+                    entLiveService.updatePkLiveLayout(liveRecordDto.getId());
+                },
+                RedisKeyEnum.ENT_LIVE_ROOM_LOCK_KEY, liveRecordDto.getId());
     }
 
     @Override
@@ -195,6 +211,13 @@ public class EntNotifyServiceImpl implements EntNotifyService {
 
         Long liveRecordId = liveRecordDto.getId();
         String roomUuid = liveRecordDto.getRoomUuid();
+        if (LiveTypeEnum.isPkLive(liveRecordDto.getLive())) {
+            //观众主播下麦更新推流布局
+            lockerService.tryLockAndDo(() -> {
+                entLiveService.updatePkLiveLayout(liveRecordId);
+            }, ENT_LIVE_ROOM_LOCK_KEY.getKeyPrefix(), yunXinConfigProperties.getAppKey(), roomUuid);
+        }
+
         if (LiveTypeEnum.isKTVLive(liveRecordDto.getLiveType())) {
             try {
                 //ktv场景清空用户已点歌曲

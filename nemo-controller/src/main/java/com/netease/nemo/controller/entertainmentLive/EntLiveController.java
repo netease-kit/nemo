@@ -9,10 +9,7 @@ import com.netease.nemo.entlive.dto.LiveIntroDto;
 import com.netease.nemo.entlive.enums.LiveTypeEnum;
 import com.netease.nemo.entlive.enums.RoomProfileEnum;
 import com.netease.nemo.entlive.enums.SeatModeEnum;
-import com.netease.nemo.entlive.parameter.CreateLiveParam;
-import com.netease.nemo.entlive.parameter.LiveListQueryParam;
-import com.netease.nemo.entlive.parameter.LiveParam;
-import com.netease.nemo.entlive.parameter.LiveRewardParam;
+import com.netease.nemo.entlive.parameter.*;
 import com.netease.nemo.entlive.service.EntLiveService;
 import com.netease.nemo.entlive.util.LiveResourceUtil;
 import com.netease.nemo.enums.RedisKeyEnum;
@@ -40,6 +37,7 @@ public class EntLiveController {
     @Resource
     private EntLiveService entLiveService;
 
+    @Deprecated
     @RequestMapping("/createLive")
     public LiveIntroDto createLive(@Valid @RequestBody CreateLiveParam param) {
         checkCreateLiveParam(param);
@@ -47,6 +45,20 @@ public class EntLiveController {
         return lockerService.tryLockAndDoAndReturn(
                 () -> entLiveService.createLiveRoom(param),
                 RedisKeyEnum.ENT_CREATE_LIVE_ROOM_LOCK_KEY, Context.get().getUserUuid());
+    }
+
+    /**
+     * 新增V3版本创建直播的接口
+     * @param param
+     * @return
+     */
+    @RequestMapping("/createLiveV3")
+    public LiveIntroDto createLiveV3(@Valid @RequestBody CreateLiveParam param) {
+        checkCreateLiveParam(param);
+
+        return lockerService.tryLockAndDoAndReturn(
+                () -> entLiveService.createLiveRoomV3(param),
+                RedisKeyEnum.ENT_LIVE_ROOM_LOCK_KEY, Context.get().getUserUuid());
     }
 
     @RequestMapping(value = "/destroyLive")
@@ -81,6 +93,51 @@ public class EntLiveController {
     public PageInfo<LiveIntroDto> getLiveList(@Valid @RequestBody LiveListQueryParam param) {
         checkLiveListParam(param);
         return entLiveService.getLiveRoomList(param);
+    }
+
+    @GetMapping(value = "/audience/list")
+    public Object getAudienceList(@RequestParam("liveRecordId") Long liveRecordId,
+                                  @RequestParam(value = "page", required = false, defaultValue = "1") Integer page,
+                                  @RequestParam(value = "size", required = false, defaultValue = "200") Integer size) {
+        AssertUtil.isTrue(page >= 1, ErrorCode.BAD_REQUEST, "PageNumber is invalid.");
+        AssertUtil.isTrue(size >= 1 && size <= 200, ErrorCode.BAD_REQUEST, "PageSize is invalid or exceeds the maximum");
+        return entLiveService.getAudienceList(liveRecordId, page, size);
+    }
+
+    /**
+     * 暂停直播
+     *
+     * @param liveBaseParam 直播Id
+     */
+    @PostMapping(value = "/pauseLive")
+    public void pauseLive(@RequestBody @Valid LiveBaseParam liveBaseParam) {
+        String userUuid = Context.get().getUserUuid();
+        lockerService.tryLockAndDo(
+                () -> entLiveService.pauseLive(userUuid, liveBaseParam.getLiveRecordId()),
+                RedisKeyEnum.ENT_LIVE_ROOM_LOCK_KEY, Context.get().getUserUuid());
+    }
+
+    /**
+     * 恢复直播
+     * @param liveBaseParam 直播Id
+     */
+    @PostMapping(value = "/resumeLive")
+    public void resumeLive(@RequestBody @Valid LiveBaseParam liveBaseParam) {
+        String userUuid = Context.get().getUserUuid();
+        lockerService.tryLockAndDo(
+                () -> entLiveService.resumeLive(userUuid, liveBaseParam.getLiveRecordId()),
+                RedisKeyEnum.ENT_LIVE_ROOM_LOCK_KEY, Context.get().getUserUuid());
+    }
+
+    /**
+     * 查询当前用户未结束的直播
+     *
+     */
+    @GetMapping(value = "ongoing")
+    public LiveIntroDto ongoingLive() {
+        String userUuid = Context.get().getUserUuid();
+        String appKey = Context.get().getAppKey();
+        return entLiveService.getOngoingLive(appKey, userUuid);
     }
 
     private void checkLiveListParam(LiveListQueryParam param) {

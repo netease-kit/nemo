@@ -30,4 +30,9 @@ public interface LiveRecordMapper {
     LiveRecord selectByRoomUuid(@Param("roomUuid") String roomUuid);
 
     List<LiveRecord> getLivingRecords(@Param("liveType") Integer liveType, int live, String excludeUserUuid);
+
+    LiveRecord selectOneByUserUuidAndState(@Param("userUuid") String userUuid, @Param("statusList") List<Integer> statusList);
+
+    LiveRecord selectByChatRoomId(@Param("chatRoomId") Long chatRoomId);
+
 }

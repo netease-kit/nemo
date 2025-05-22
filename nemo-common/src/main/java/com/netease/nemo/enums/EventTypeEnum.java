@@ -148,7 +148,16 @@ public enum EventTypeEnum {
     GAME_CREATE(1104,"游戏创建|选择游戏"),
 
 
+    /**
+     * 直播暂停
+     */
+    LIVE_PAUSE(1105, "直播暂停"),
 
+    /**
+     *  直播恢复
+     */
+
+    LIVE_RESUME(1106, "直播恢复"),
 
     /**
      * 实时音视频安全通审核违规账号解禁事件

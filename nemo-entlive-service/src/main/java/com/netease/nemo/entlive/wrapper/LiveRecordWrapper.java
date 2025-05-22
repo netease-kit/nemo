@@ -3,6 +3,7 @@ package com.netease.nemo.entlive.wrapper;
 import com.netease.nemo.entlive.mapper.LiveRecordMapper;
 import com.netease.nemo.entlive.model.po.LiveRecord;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.ibatis.annotations.Param;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
@@ -10,6 +11,7 @@ import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
+import java.util.List;
 
 /**
  * 直播记录缓存类
@@ -94,4 +96,7 @@ public class LiveRecordWrapper {
     public LiveRecord selectByRoomUuid(String roomUuid) {
         return liveRecordMapper.selectByRoomUuid(roomUuid);
     }
-}
+
+    public LiveRecord selectByUserUuidAndState(String userUuid, List<Integer> ongoingState) {
+        return liveRecordMapper.selectOneByUserUuidAndState(userUuid, ongoingState);
+    }}

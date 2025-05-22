@@ -2,6 +2,7 @@ package com.netease.nemo.entlive.service;
 
 import com.netease.nemo.entlive.dto.LiveRecordDto;
 import com.netease.nemo.entlive.model.po.LiveRecord;
+import com.netease.nemo.openApi.dto.neroom.UserOnSeatNotifyDto;
 
 import java.util.List;
 
@@ -120,4 +121,9 @@ public interface LiveRecordService {
      * @return LiveRecordDto
      */
     LiveRecordDto getLiveRecordByRoomArchiveId(String roomArchiveId);
+
+    List<UserOnSeatNotifyDto.SeatUser> getAllSeatUsersTyped(String roomArchiveId, String roomManager);
+
+    LiveRecordDto getLiveRecord( String userUuid, List<Integer> ongoingState);
+
 }

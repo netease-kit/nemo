@@ -3,6 +3,7 @@ package com.netease.nemo.entlive.service.impl;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.google.common.collect.Lists;
 import com.google.gson.JsonObject;
 import com.netease.nemo.code.ErrorCode;
 import com.netease.nemo.config.YunXinConfigProperties;
@@ -11,11 +12,9 @@ import com.netease.nemo.dto.EventDto;
 import com.netease.nemo.dto.UserDto;
 import com.netease.nemo.entlive.dto.*;
 import com.netease.nemo.entlive.dto.message.RewardContentMessage;
-import com.netease.nemo.entlive.enums.LiveEnum;
-import com.netease.nemo.entlive.enums.LiveTypeEnum;
-import com.netease.nemo.entlive.enums.SeatModeEnum;
-import com.netease.nemo.entlive.enums.SeatStatusEnum;
+import com.netease.nemo.entlive.enums.*;
 import com.netease.nemo.entlive.event.GameRoomCloseEvent;
+import com.netease.nemo.entlive.manager.LiveLayoutManager;
 import com.netease.nemo.entlive.model.po.LiveRecord;
 import com.netease.nemo.entlive.model.po.LiveReward;
 import com.netease.nemo.entlive.parameter.CreateLiveParam;
@@ -34,8 +33,11 @@ import com.netease.nemo.openApi.NimService;
 import com.netease.nemo.openApi.dto.neroom.CreateNeRoomDto;
 import com.netease.nemo.openApi.dto.neroom.NeRoomMemberDto;
 import com.netease.nemo.openApi.dto.neroom.NeRoomSeatDto;
+import com.netease.nemo.openApi.dto.neroom.UserOnSeatNotifyDto;
 import com.netease.nemo.openApi.dto.nim.YunxinCreateLiveChannelDto;
 import com.netease.nemo.openApi.paramters.neroom.CreateNeRoomParam;
+import com.netease.nemo.openApi.paramters.neroom.CreateNeRoomParamV3;
+import com.netease.nemo.openApi.paramters.neroom.StartLiveParam;
 import com.netease.nemo.queue.producer.DelayQueueProducer;
 import com.netease.nemo.service.UserService;
 import com.netease.nemo.util.ObjectMapperUtil;
@@ -263,9 +265,9 @@ public class EntLiveServiceImpl implements EntLiveService {
             throw new BsException(ErrorCode.FORBIDDEN, "用户无权限关播");
         }
 
-        if (LiveTypeEnum.isPkLive(liveRecord.getLiveType())) {
-            JsonObject live = GsonUtil.parseJsonObject(liveRecord.getLiveConfig());
-            nimService.deleteLiveChannel(live.get("cid").getAsString());
+        if(LiveEnum.isLiveClose(liveRecord.getLive())){
+            log.info("live is closed, liveRecordId:{}", liveRecordId);
+            return;
         }
 
         if (LiveTypeEnum.isKTVLive(liveRecord.getLiveType())) {
@@ -433,9 +435,10 @@ public class EntLiveServiceImpl implements EntLiveService {
      */
     private void buildLiveDto(LiveDto liveDto, Boolean isHost) {
 
-        // 获取NeRoom人数
-        long neRoomMemberSize = neRoomMemberService.getRoomMemberSize(liveDto.getRoomArchiveId());
-        liveDto.setAudienceCount((neRoomMemberSize <= 1) ? 0L : neRoomMemberSize - 1);
+        Long chatRoomId = liveDto.getChatRoomId();
+        // 获取观众人数
+        long audienceCount = neRoomMemberService.getOnlineAudienceCount(chatRoomId);
+        liveDto.setAudienceCount(audienceCount);
 
         // 获取打赏金额
         Long liveRewardTotal = liveRewardService.getLiveRewordTotal(liveDto.getId());
@@ -449,11 +452,11 @@ public class EntLiveServiceImpl implements EntLiveService {
         liveDto.setSeatUserReward(getSeatUserReward(liveDto.getId(), neRoomSeats));
 
         if (null != liveDto.getLiveConfig()) {
-            YunxinCreateLiveChannelDto yunxinCreateLiveChannelDto = GsonUtil.fromJson(liveDto.getLiveConfig(), YunxinCreateLiveChannelDto.class);
-            if (!isHost) {
-                yunxinCreateLiveChannelDto.setPushUrl(null);
+            CreateNeRoomParam.ExternalLiveConfig externalLiveConfig = GsonUtil.fromJson(liveDto.getLiveConfig(), CreateNeRoomParam.ExternalLiveConfig.class);
+            if (!isHost && externalLiveConfig != null) {
+                externalLiveConfig.setPushUrl(null);
             }
-            liveDto.setExternalLiveConfig(CreateNeRoomParam.ExternalLiveConfig.toExternalLiveConfig(yunxinCreateLiveChannelDto));
+            liveDto.setExternalLiveConfig(externalLiveConfig);
         }
     }
 
@@ -503,5 +506,221 @@ public class EntLiveServiceImpl implements EntLiveService {
                     }
                     return seatUserRewardInfo;
                 }).collect(Collectors.toList());
+    }
+
+    @Override
+    public LiveIntroDto createLiveRoomV3(CreateLiveParam param) {
+        String host = Context.get().getUserUuid();
+        UserDto userDto = userService.getUser(host);
+
+        LiveRecord liveRecordExists = liveRecordWrapper.selectByUserUuidAndType(host, param.getLiveType());
+        if (liveRecordExists != null) {
+            // 如果已经有直播记录，则先关闭原来的历史直播
+            closeLiveRoom(host, liveRecordExists.getId());
+        }
+
+        // TODO 使用分布式ID生成保证ID唯一
+        String roomUuid = UUIDUtil.getUUID();
+        if (StringUtils.isEmpty(param.getRoomName())) {
+            param.setRoomName(param.getLiveTopic());
+        }
+
+        // 创建V3参数对象
+        CreateNeRoomParamV3 createNeRoomParamV3 = new CreateNeRoomParamV3();
+        createNeRoomParamV3.setRoomUuid(roomUuid);
+        createNeRoomParamV3.setRoomName(param.getRoomName());
+        createNeRoomParamV3.setHostUserUuid(host);
+
+        CreateNeRoomParamV3.RoomComponentConfigV3 config = new CreateNeRoomParamV3.RoomComponentConfigV3();
+        // 设置麦位配置
+        if (param.getSeatCount() != null && param.getSeatCount() > 0) {
+            CreateNeRoomParamV3.RoomComponentConfigV3.SeatConfig seatConfig = new CreateNeRoomParamV3.RoomComponentConfigV3.SeatConfig();
+            seatConfig.setEnable(true);
+            seatConfig.setSeatCount(param.getSeatCount());
+            seatConfig.setApplyMode(param.getSeatApplyMode());
+            seatConfig.setInviteMode(param.getSeatInviteMode());
+            config.setSeat(seatConfig);
+        }
+
+        // 设置房间类型配置
+        if (param.getRoomProfile() != null) {
+            RoomProfileEnum roomProfileEnum = RoomProfileEnum.fromCode(param.getRoomProfile());
+            assert roomProfileEnum != null;
+            createNeRoomParamV3.setRoomProfile(roomProfileEnum.getState());
+        }
+
+        if(LiveTypeEnum.isPkLive(param.getLiveType())){
+            // 直播场景强制指定此模式
+            createNeRoomParamV3.setRoomProfile(RoomProfileEnum.LIVE_BROADCASTING.getState());
+        }
+
+        // 设置模板ID
+        Long configId = getDefaultTemplateId(param.getLiveType());
+        createNeRoomParamV3.setTemplateId(configId);
+
+        // 设置其他组件配置 (根据RoomResourceConfig来适配)
+        config.setChatroom(true); // 默认开启聊天室
+        config.setRtc(true);      // 默认开启RTC
+
+        createNeRoomParamV3.setConfig(config);
+
+        // 设置直播配置
+        if(LiveTypeEnum.isPkLive(param.getLiveType())) {
+            CreateNeRoomParamV3.RoomComponentConfigV3.LiveConfig liveConfig = new CreateNeRoomParamV3.RoomComponentConfigV3.LiveConfig();
+            liveConfig.setEnable(true);
+            config.setLive(liveConfig);
+        }
+
+        CreateNeRoomDto neRoomDto = neRoomService.createNeRoomV3(createNeRoomParamV3);
+
+        LiveRecord liveRecord = LiveRecord.builderLiveRecordV3(param, host, roomUuid, neRoomDto);
+        int res = liveRecordWrapper.insertSelective(liveRecord);
+        if (res < 1) {
+            log.error("addLiveRecord failed");
+            throw new BsException(ErrorCode.INTERNAL_SERVER_ERROR);
+        }
+
+        return new LiveIntroDto(BasicUserDto.buildBasicUser(userDto), ObjectMapperUtil.map(liveRecord, LiveDto.class));
+    }
+
+    public PageDto<AudienceInfo> getAudienceList(Long liveRecordId, Integer page, Integer size) {
+        LiveRecordDto liveRecordDto = liveRecordService.getLiveRecord(liveRecordId);
+        if (liveRecordDto == null) {
+            throw new BsException(ErrorCode.LIVE_RECORD_NOT_EXIST);
+        }
+
+        List<AudienceInfo> onlineAudienceList = neRoomMemberService.getOnlineAudienceList(liveRecordDto.getChatRoomId(), page, size);
+        List<String> collect = onlineAudienceList
+                .stream().map(AudienceInfo::getUserUuid).collect(Collectors.toList());
+
+        Map<String, UserDto> users = userService.getUsers(collect)
+                .stream().collect(Collectors.toMap(UserDto::getUserUuid, o -> o));
+
+        Long onlineAudienceCount = neRoomMemberService.getOnlineAudienceCount(liveRecordDto.getChatRoomId());
+
+        onlineAudienceList.forEach(au -> {
+            UserDto userDto = users.get(au.getUserUuid());
+            if(userDto != null) {
+                au.setIcon(userDto.getIcon());
+                au.setUserName(userDto.getUserName());
+            }
+        });
+
+        return new PageDto<>(onlineAudienceCount, onlineAudienceList);
+    }
+
+    @Override
+    public LiveIntroDto getOngoingLive(String appKey, String userUuid) {
+        List<Integer> ongoingState = Lists.newArrayList(LiveEnum.NOT_START.getCode(), LiveEnum.LIVE.getCode(), LiveEnum.LIVE_PAUSE.getCode());
+        LiveRecordDto liveRecord = liveRecordService.getLiveRecord(userUuid, ongoingState);
+        if(liveRecord == null){
+            return null;
+        }
+        return getLiveInfo(liveRecord.getId());
+    }
+
+    @Override
+    public void updatePkLiveLayout(Long liveRecordId) {
+
+        log.info("updateLiveWhenUserOnSeat, liveRecordId:{}", liveRecordId);
+        LiveRecord liveRecord = liveRecordWrapper.selectByPrimaryKey(liveRecordId);
+        if (null == liveRecord) {
+            log.info("LiveRecord is valid:{}", liveRecordId);
+            throw new BsException(ErrorCode.LIVE_RECORD_NOT_EXIST);
+        }
+
+        if(!LiveTypeEnum.isPkLive(liveRecord.getLiveType())){
+            // 不是互动直播，不需要发起推流任务
+            return;
+        }
+
+        // 获取所有麦上成员
+        List<String> allSeatUsers = liveRecordService.getAllSeatUsersTyped(liveRecord.getRoomArchiveId(), liveRecord.getUserUuid())
+                .stream().map(UserOnSeatNotifyDto.SeatUser::getUserUuid).collect(Collectors.toList());
+
+        if(CollectionUtils.isEmpty(allSeatUsers)){
+            // 直播间没有人了
+            pauseLive(liveRecord.getUserUuid(), liveRecordId);
+            return;
+        }else if(allSeatUsers.size() == 1 && allSeatUsers.contains(liveRecord.getUserUuid())){
+            // 直播间主播进入了
+            if(LiveEnum.isPause(liveRecord.getLive())){
+                // 如果之前是暂停状态，则恢复直播
+                resumeLive(liveRecord.getUserUuid(), liveRecordId);
+                return;
+            }else {
+                // 更新直播状态为直播中
+                log.info("update Live status WhenUserOnSeat, liveRecordId:{}, allSeatUsers:{}", liveRecordId, allSeatUsers);
+                liveRecord.setLive(LiveEnum.LIVE.getCode());
+                liveRecordWrapper.updateByPrimaryKeySelective(liveRecord);
+            }
+        }else {
+            log.info("update LiveSeat status WhenUserOnSeat, liveRecordId:{}, allSeatUsers:{}", liveRecordId, allSeatUsers);
+            liveRecord.setLive(LiveEnum.LIVE_SEAT.getCode());
+            liveRecordWrapper.updateByPrimaryKeySelective(liveRecord);
+        }
+        // 开启推流任务
+        StartLiveParam startLiveParam = LiveLayoutManager.buildLayoutParam(liveRecord.getRoomArchiveId(), allSeatUsers , liveRecord.getLiveTopic());
+        try {
+            // 尝试更新推流任务，失败后则重启推流任务
+            neRoomService.updateLive(startLiveParam);
+        }catch (Exception e){
+            neRoomService.startLive(startLiveParam);
+        }
+    }
+
+    @Override
+    public void pauseLive(String operator, Long liveRecordId) {
+        log.info("pauseLive operator:{}, liveRecordId:{}", operator, liveRecordId);
+        LiveRecord liveRecord = liveRecordWrapper.selectByPrimaryKey(liveRecordId);
+        if (!operator.equals(liveRecord.getUserUuid())) {
+            throw new BsException(ErrorCode.FORBIDDEN, "用户无权限暂停直播");
+        }
+
+        if(LiveEnum.isPause(liveRecord.getLive())){
+            log.info("live is paused, liveRecordId:{}", liveRecordId);
+            return;
+        }
+
+        if(!LiveTypeEnum.isPkLive(liveRecord.getLive())){
+            throw new BsException(ErrorCode.FORBIDDEN, "只有普通直播才能暂停");
+        }
+
+        if(!Objects.equals(liveRecord.getLive(), LiveEnum.LIVE.getCode())){
+            throw new BsException(ErrorCode.FORBIDDEN, "非直播中状态，不能暂停");
+        }
+
+        liveRecord.setLive(LiveEnum.LIVE_PAUSE.getCode());
+        liveRecordWrapper.updateByPrimaryKeySelective(liveRecord);
+        // 发送直播暂停事件
+        LiveRecordDto liveRecordDto = ObjectMapperUtil.map(liveRecord, LiveRecordDto.class);
+        messageService.sendNeRoomChatMsg(liveRecordDto.getRoomUuid(), new EventDto(liveRecordDto, EventTypeEnum.LIVE_PAUSE.getType()));
+        // 停止推流任务
+        neRoomService.stopLive(liveRecord.getRoomArchiveId());
+    }
+
+    @Override
+    public void resumeLive(String operator, Long liveRecordId) {
+        log.info("resumeLive operator:{}, liveRecordId:{}", operator, liveRecordId);
+        LiveRecord liveRecord = liveRecordWrapper.selectByPrimaryKey(liveRecordId);
+        if (!operator.equals(liveRecord.getUserUuid())) {
+            throw new BsException(ErrorCode.FORBIDDEN, "用户无权限恢复直播");
+        }
+
+        if(!LiveTypeEnum.isPkLive(liveRecord.getLiveType())){
+            throw new BsException(ErrorCode.FORBIDDEN, "无法恢复，类型不支持");
+        }
+
+        if(!Objects.equals(liveRecord.getLive(), LiveEnum.LIVE_PAUSE.getCode())){
+            throw new BsException(ErrorCode.FORBIDDEN, "直播状态不正确，无法恢复直播");
+        }
+
+        liveRecord.setLive(LiveEnum.LIVE.getCode());
+        liveRecordWrapper.updateByPrimaryKeySelective(liveRecord);
+        // 发送直播恢复事件
+        LiveRecordDto liveRecordDto = ObjectMapperUtil.map(liveRecord, LiveRecordDto.class);
+        messageService.sendNeRoomChatMsg(liveRecordDto.getRoomUuid(), new EventDto(liveRecordDto, EventTypeEnum.LIVE_RESUME.getType()));
+        StartLiveParam startLiveParam = LiveLayoutManager.buildLayoutParam(liveRecord.getRoomArchiveId(), Collections.singletonList(liveRecord.getUserUuid()), liveRecord.getRoomName());
+        neRoomService.startLive(startLiveParam);
     }
 }

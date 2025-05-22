@@ -2,6 +2,8 @@ package com.netease.nemo.entlive.enums;
 
 import lombok.Getter;
 
+import java.util.Objects;
+
 @Getter
 public enum LiveEnum {
     LIVE_CLOSE(-1, "直播结束"),
@@ -11,6 +13,8 @@ public enum LiveEnum {
     LIVE_PUNISHMENT(3, "直播惩罚"),
     LIVE_SEAT(4, "连麦中"),
     PK_WAITING(5, "pK 邀请中"),
+    LIVE_PAUSE(6, "直播暂停"),
+
     ;
 
     /**
@@ -89,6 +93,18 @@ public enum LiveEnum {
         }
 
         return LiveEnum.LIVE.getCode() == code;
+    }
+
+    public static boolean isLiveClose(Integer live) {
+        return Objects.equals( LiveEnum.LIVE_CLOSE.getCode(), live);
+    }
+
+    public static boolean isPause(Integer live) {
+        return Objects.equals( LiveEnum.LIVE_PAUSE.getCode(), live);
+    }
+
+    public static boolean isNotStart(Integer live) {
+        return Objects.equals( LiveEnum.NOT_START.getCode(), live);
     }
 
 }

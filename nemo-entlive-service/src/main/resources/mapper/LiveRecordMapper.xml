@@ -235,4 +235,22 @@
     where room_uuid = #{roomUuid,jdbcType=VARCHAR}
     and status = 1
   </select>
+  <select id="selectOneByUserUuidAndState" resultType="com.netease.nemo.entlive.model.po.LiveRecord">
+    select
+    <include refid="Base_Column_List"/>
+    from live_record
+    where user_uuid = #{userUuid,jdbcType=VARCHAR}
+    and status = 1
+    and live in
+    <foreach collection="statusList" item="status" open="(" separator="," close=")">
+      #{status}
+    </foreach>
+    limit 1
+  </select>
+  <select id="selectByChatRoomId" resultType="com.netease.nemo.entlive.model.po.LiveRecord">
+    select
+    <include refid="Base_Column_List" />
+    from live_record where
+    chat_room_id = #{chatRoomId,jdbcType=VARCHAR}
+  </select>
 </mapper>
